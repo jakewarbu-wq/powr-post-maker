@@ -18,6 +18,7 @@
   --bg:#0E2427; --surface:#143236; --surface-2:#1A3E42; --fg:#F4E9E6; --muted:#B5CBCB;
   --line:#2A5257; --accent:#F0D9D2; --accent-fg:#0E2427; --ok:#7CC9A4; --warn:#F0A57E; color-scheme:dark}}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.5}
 .wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 header{border-bottom:1px solid var(--line)}
@@ -29,6 +30,11 @@ header a.back{margin-left:auto;color:var(--fg);text-decoration:none;border:1px s
 .book .label{font-weight:600;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase}
 .book a{color:var(--fg);font-weight:500;word-break:break-all}
 .book .btn{padding:7px 14px}
+.days{display:flex;flex-wrap:wrap;gap:8px;padding-block:20px 0}
+.chip{font:inherit;font-size:.95rem;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:7px 16px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.chip .n{opacity:.7;font-size:.85em;margin-left:4px;font-variant-numeric:tabular-nums}
+.dayname{font-weight:600;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 main.wrap{padding-block:24px 64px;display:grid;gap:24px}
 .post{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px}
 .post.done{opacity:.6}
@@ -61,7 +67,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
   <div class="wrap">
     <div>
       <h1>Ready to Post</h1>
-      <p>New posts appear here every Monday, Wednesday and Friday morning. Save the images, copy the caption, then follow the steps in the Post Maker.</p>
+      <p>New posts appear here every Monday, Wednesday, Friday and Saturday morning. Save the images, copy the caption, then follow the steps in the Post Maker.</p>
     </div>
     <a class="back" href="./">Open the Post Maker</a>
   </div>
@@ -72,6 +78,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
     <span class="hint" id="bookStatus" aria-live="polite">Paste it into a Story link sticker, or your bio.</span>
   </div>
 </header>
+<div class="wrap days" id="days" role="group" aria-label="Show posts for"></div>
 <main class="wrap" id="list">
   <p class="empty">Loading posts…</p>
 </main>
@@ -86,16 +93,42 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
   };
   const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} } };
   const fmt = (d) => { try { return new Date(d + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }); } catch { return d; } };
+  // Day of the week filter
+  const DAYS = ["Monday", "Wednesday", "Friday", "Saturday"];
+  function dayOf(d) { try { return new Date(d.slice(0, 10) + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long" }); } catch { return ""; } }
+  let pick = store.get("powr:day") || "All";
+  function applyDay() {
+    document.querySelectorAll(".post").forEach(a => { a.hidden = pick !== "All" && a.dataset.day !== pick; });
+    document.querySelectorAll("#days .chip").forEach(c => c.setAttribute("aria-pressed", c.dataset.day === pick));
+    let none = document.getElementById("none");
+    if (!none) { none = document.createElement("p"); none.id = "none"; none.className = "empty"; list.prepend(none); }
+    none.textContent = `No ${pick} posts yet. They arrive on ${pick} mornings.`;
+    none.hidden = pick === "All" || document.querySelectorAll(".post:not([hidden])").length > 0;
+  }
+  function buildDays() {
+    const box = document.getElementById("days"); box.innerHTML = "";
+    const all = [...document.querySelectorAll(".post")];
+    const extra = [...new Set(all.map(a => a.dataset.day))].filter(d => d && !DAYS.includes(d));
+    if (pick !== "All" && !DAYS.includes(pick) && !extra.includes(pick)) pick = "All";
+    for (const d of ["All", ...DAYS, ...extra]) {
+      const n = d === "All" ? all.length : all.filter(a => a.dataset.day === d).length;
+      const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.day = d;
+      b.innerHTML = `${d === "All" ? "All days" : d}<span class="n">${n}</span>`;
+      b.onclick = () => { pick = d; store.set("powr:day", d === "All" ? "" : d); applyDay(); };
+      box.append(b);
+    }
+    applyDay();
+  }
   let posts = [];
   try { posts = await (await fetch("posts/index.json", { cache: "no-store" })).json(); } catch {}
-  if (!posts.length) { list.innerHTML = '<p class="empty">No posts yet. The first ones arrive on the next Monday, Wednesday or Friday morning.</p>'; return; }
+  if (!posts.length) { list.innerHTML = '<p class="empty">No posts yet. The next one arrives on Monday, Wednesday, Friday or Saturday morning.</p>'; return; }
   list.innerHTML = "";
   for (const item of posts) {
     let p; try { p = await (await fetch(`posts/${item.id}/post.json`, { cache: "no-store" })).json(); } catch { continue; }
     const full = (p.caption || "").trim() + (p.hashtags?.length ? "\n\n" + p.hashtags.join(" ") : "");
     const el = document.createElement("article"); el.className = "post";
     el.innerHTML = `
-      <div class="top"><h2></h2><span class="pill"></span><span class="date"></span></div>
+      <div class="top"><span class="dayname"></span><h2></h2><span class="pill"></span><span class="date"></span></div>
       <div class="imgs">
         <figure><img alt="Feed image" loading="lazy" src="posts/${item.id}/feed.jpg"><figcaption>Feed post</figcaption><a class="btn" download="powr-feed-${item.id}.jpg" href="posts/${item.id}/feed.jpg">Save feed</a></figure>
         <figure><img alt="Story image" loading="lazy" src="posts/${item.id}/story.jpg"><figcaption>Story</figcaption><a class="btn" download="powr-story-${item.id}.jpg" href="posts/${item.id}/story.jpg">Save Story</a></figure>
@@ -110,6 +143,8 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
         <p class="status" aria-live="polite"></p>
         <label class="check"><input type="checkbox"> Posted</label>
       </div>`;
+    const day = dayOf(p.date || item.id); el.dataset.day = day;
+    el.querySelector(".dayname").textContent = day;
     el.querySelector("h2").textContent = p.title || p.headline || "Post";
     el.querySelector(".pill").textContent = p.pillar || "";
     el.querySelector(".date").textContent = p.date ? "For " + fmt(p.date) : "";
@@ -141,6 +176,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
     cb.onchange = () => { store.set(key, cb.checked ? "1" : ""); el.classList.toggle("done", cb.checked); };
     list.append(el);
   }
+  buildDays();
 })();
 </script>
 </body>

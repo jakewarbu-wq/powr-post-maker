@@ -1,24 +1,37 @@
-# Automatic posts (Monday, Wednesday, Friday)
+# Automatic posts (Monday, Wednesday, Friday, Saturday)
 
-A scheduled Claude session follows these steps each Monday, Wednesday and Friday morning. It adds one finished post to `posts/`. The owner then picks it up from `ready.html` on the GitHub Pages site.
+A scheduled Claude session runs these steps every Monday, Wednesday, Friday and Saturday morning, and adds one finished post to `posts/`. The owner picks it up from `ready.html` on the GitHub Pages site, which can be filtered by day of the week.
 
 ## 1. Decide what today's post is about
 
-Read the content calendar Google Sheet `1nT0P1lHylH-bXXSEFmhkWF1_Gz0cOLcc__isC7RdcBM` with the Google Sheets connector:
+### Start from the week and the time of year
 
-- **Monthly themes**: the row for the current month sets the theme, the offer or call to action, and the classes to feature.
-- **Key dates**: if a moment falls within the next 3 days, use it, unless it says "Check nearer the time", has an empty Date, or is marked Posted.
+Before choosing the post, work out what this week is like in Clitheroe and the UK:
+
+- the season, the weather people are dealing with (dark evenings, cold mornings, spring light, summer holidays), and any clock change;
+- school holidays and half terms in Lancashire;
+- bank holidays, and national moments or awareness days that fall in the coming 7 days.
+
+Then read the content calendar Google Sheet `1nT0P1lHylH-bXXSEFmhkWF1_Gz0cOLcc__isC7RdcBM` with the Google Sheets connector:
+
+- **Monthly themes**: the row for the current month sets the theme, the offer or call to action, and the classes to feature. If the week straddles two months, lead into the next month's theme in the last few days.
+- **Key dates**: if a moment falls within the next 3 days, use it, unless it says "Check nearer the time", has an empty Date, or is marked Posted. Mention moments later in the week as "coming up".
 - **Weekly rhythm**: the pillar for the day.
 
-The posts here are still images with no photo, so use these pillars:
+Read this week's earlier posts in `posts/` (up to 3 since Monday) and the last 8 entries in `posts/index.json`. The four posts each week should read as one connected set: same monthly theme, different angles, and no repeated headline or opening line.
+
+### Pillar for each day
+
+The posts are still images with no photo:
 
 | Day | Pillar | `type` |
 |---|---|---|
-| Monday | Week ahead: the month's theme and a reason to book this week | `time` or `motiv` |
-| Wednesday | Teach something: one practical Pilates, Barre or posture tip | `cls` or `motiv` |
+| Monday | Week ahead: the month's theme, what the week holds (key dates, seasonal moment) and a reason to book this week | `time` or `motiv` |
+| Wednesday | Teach something: one practical Pilates, Barre or posture tip tied to the season (for example, desk posture in dark winter weeks, or mobility for spring runners) | `cls` or `motiv` |
 | Friday | Monthly theme, key date or current offer from the calendar | `offer`, `news` or `cls` |
+| Saturday | Weekend and local: Rest and reset or Local Clitheroe from the calendar's weekly rhythm. Use a weekend stretch or self-care tip, a nod to the Ribble Valley in this season, or a "plan next week's classes" nudge. Keep it gentle and low pressure. | `motiv` or `cls` |
 
-Read the last 6 entries in `posts/index.json` and don't repeat a headline or angle from them. Rotate `style` through `arch`, `overlay` and `frame`, so it differs from the previous post.
+Rotate `style` through `arch`, `overlay` and `frame`, so it differs from the previous post.
 
 ## 2. Facts you may use
 
@@ -27,6 +40,7 @@ Read the last 6 entries in `posts/index.json` and don't repeat a headline or ang
 - Barre is the standout, because no other studio nearby offers it.
 - Never invent prices, class times, dates, member names, testimonials or offers that aren't written in the calendar. If a calendar offer has no details, say "details in our Stories" or "link in bio".
 - Don't write member spotlights or anything that needs a real person's consent.
+- Don't name or recommend other local businesses unless the calendar does.
 
 ## 3. Write `posts/YYYY-MM-DD/post.json`
 
@@ -36,6 +50,7 @@ Use today's date in the folder name:
 {
   "date": "2026-10-19",
   "title": "Short name shown on the Ready to post page",
+  "day": "Monday",
   "pillar": "Week ahead",
   "type": "time",
   "style": "arch",
