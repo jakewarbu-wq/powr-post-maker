@@ -38,7 +38,8 @@ Rotate `style` through `arch`, `overlay` and `frame`, so it differs from the pre
 - The studio is POWR Studio, 9 York Street, Clitheroe (Ribble Valley, Lancashire), Instagram @powrstudioclitheroe.
 - Classes are Reformer Pilates, Mat Pilates, Barre, Stretch, and PT / 1-2-1s. Booking is through the link in the bio (ClassFit).
 - Barre is the standout, because no other studio nearby offers it.
-- Never invent prices, class times, dates, member names, testimonials or offers that aren't written in the calendar. If a calendar offer has no details, say "details in our Stories" or "link in bio".
+- Known prices (from the studio's ClassFit price list): a single Reformer class is £18, and the Reformer Foundations intro of 3 classes is £45. These undercut other local studios (£20 to £25), but never name a competitor. Use them when a post is about trying Reformer or about value.
+- Never invent any other prices, class times, dates, member names, testimonials or offers that aren't written in the calendar. If a calendar offer has no details, say "details in our Stories" or "link in bio".
 - Don't write member spotlights or anything that needs a real person's consent.
 - Don't name or recommend other local businesses unless the calendar does.
 
