@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>POWR Past Posts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&display=swap">
+<style>
+/* Layout: one section per week (newest first), a compact row per post with thumbnail, details and full caption */
+:root{
+  --bg:#F7EFEC; --surface:#FFFFFF; --surface-2:#F1E3DE; --fg:#15464D; --muted:#4E6F73;
+  --line:#E3D0CA; --accent:#15464D; --accent-fg:#F7EFEC; --ok:#2E7D5B;
+  --font:"Jost","Avenir Next","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0E2427; --surface:#143236; --surface-2:#1A3E42; --fg:#F4E9E6; --muted:#B5CBCB;
+  --line:#2A5257; --accent:#F0D9D2; --accent-fg:#0E2427; --ok:#7CC9A4; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.5}
+.wrap{max-width:1000px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{border-bottom:1px solid var(--line)}
+header .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding-block:20px}
+h1{font-weight:600;font-size:1.5rem;letter-spacing:.14em;text-transform:uppercase;margin:0}
+header p{margin:2px 0 0;color:var(--muted)}
+.nav{margin-left:auto;display:flex;flex-wrap:wrap;gap:8px}
+.nav a{color:var(--fg);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-weight:500;background:var(--surface)}
+main.wrap{padding-block:24px 64px;display:grid;gap:28px}
+.week h2{font-weight:600;font-size:.95rem;letter-spacing:.12em;text-transform:uppercase;margin:0 0 10px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
+.week h2 span{font-weight:400;letter-spacing:0;text-transform:none;color:var(--muted);font-size:.9rem}
+.rows{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.row{display:grid;grid-template-columns:88px minmax(0,1fr);gap:16px;padding:16px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row img{width:88px;aspect-ratio:4/5;object-fit:cover;border-radius:6px;background:var(--surface-2)}
+.meta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.meta b{font-weight:600}
+.day{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--muted)}
+.pill{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;background:var(--surface-2);color:var(--muted);border-radius:999px;padding:1px 9px}
+.done{font-size:.8rem;color:var(--ok);font-weight:500}
+details{margin-top:6px}
+summary{cursor:pointer;color:var(--muted);font-size:.92rem}
+pre{white-space:pre-wrap;word-break:break-word;font:inherit;margin:8px 0 0;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px}
+.links{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:8px;font-size:.9rem}
+.links a,.links button{color:var(--fg);font:inherit;font-weight:500;background:none;border:0;padding:0;text-decoration:underline;cursor:pointer}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:28px;text-align:center;color:var(--muted)}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--fg) 45%,transparent);outline-offset:2px}
+@media (max-width:480px){.row{grid-template-columns:64px minmax(0,1fr)}.row img{width:64px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div>
+      <h1>Past Posts</h1>
+      <p>Every post, grouped by week, with its caption.</p>
+    </div>
+    <nav class="nav"><a href="ready.html">Ready to post</a><a href="./">Post Maker</a></nav>
+  </div>
+</header>
+<main class="wrap" id="weeks"><p class="empty">Loading…</p></main>
+<script>
+(async () => {
+  const box = document.getElementById("weeks");
+  const posted = (id) => { try { return !!localStorage.getItem("powr:posted:" + id); } catch { return false; } };
+  const d = (s) => new Date(s.slice(0, 10) + "T12:00:00");
+  const monday = (s) => { const x = d(s); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
+  const fmt = (x, o) => x.toLocaleDateString("en-GB", o);
+  let posts = [];
+  try { posts = await (await fetch("posts/index.json", { cache: "no-store" })).json(); } catch {}
+  if (!posts.length) { box.innerHTML = '<p class="empty">No posts yet.</p>'; return; }
+  const full = await Promise.all(posts.map(async (it) => { try { return { id: it.id, ...(await (await fetch(`posts/${it.id}/post.json`, { cache: "no-store" })).json()) }; } catch { return null; } }));
+  const weeks = new Map();
+  for (const p of full.filter(Boolean)) {
+    const m = monday(p.date || p.id); const key = m.toISOString().slice(0, 10);
+    if (!weeks.has(key)) weeks.set(key, { m, items: [] });
+    weeks.get(key).items.push(p);
+  }
+  box.innerHTML = "";
+  for (const [, w] of [...weeks].sort((a, b) => b[0].localeCompare(a[0]))) {
+    w.items.sort((a, b) => a.id.localeCompare(b.id));
+    const end = new Date(w.m); end.setDate(end.getDate() + 6);
+    const sec = document.createElement("section"); sec.className = "week";
+    const done = w.items.filter(p => posted(p.id)).length;
+    sec.innerHTML = `<h2>Week of ${fmt(w.m, { day: "numeric", month: "long", year: "numeric" })}<span>${w.items.length} post${w.items.length === 1 ? "" : "s"} · ${done} marked posted on this device</span></h2><div class="rows"></div>`;
+    const rows = sec.querySelector(".rows");
+    for (const p of w.items) {
+      const caption = (p.caption || "").trim() + (p.hashtags?.length ? "\n\n" + p.hashtags.join(" ") : "");
+      const r = document.createElement("article"); r.className = "row";
+      r.innerHTML = `<img loading="lazy" alt="" src="posts/${p.id}/feed.jpg">
+        <div style="min-width:0">
+          <div class="meta"><span class="day"></span><b></b><span class="pill"></span>${posted(p.id) ? '<span class="done">✓ Posted</span>' : ""}</div>
+          <details><summary>Show caption</summary><pre></pre></details>
+          <div class="links"><a href="posts/${p.id}/feed.jpg" target="_blank" rel="noopener">Feed image</a><a href="posts/${p.id}/story.jpg" target="_blank" rel="noopener">Story image</a><button type="button">Copy caption</button><a href="./?post=${p.id}">Reuse in Post Maker</a></div>
+        </div>`;
+      r.querySelector(".day").textContent = fmt(d(p.date || p.id), { weekday: "short", day: "numeric", month: "short" });
+      r.querySelector("b").textContent = p.title || p.headline || "Post";
+      r.querySelector(".pill").textContent = p.pillar || "";
+      r.querySelector("pre").textContent = caption;
+      const btn = r.querySelector("button");
+      btn.onclick = async () => { try { await navigator.clipboard.writeText(caption); btn.textContent = "Copied"; } catch { r.querySelector("details").open = true; btn.textContent = "Caption shown above"; } };
+      rows.append(r);
+    }
+    box.append(sec);
+  }
+})();
+</script>
+</body>
+</html>
