@@ -48,7 +48,7 @@ input:focus-visible,textarea:focus-visible,button:focus-visible,.drop:focus-with
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{font:inherit;font-size:.92rem;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:7px 14px;cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
-.styles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.styles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .style{font:inherit;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:12px;padding:10px 6px 8px;cursor:pointer;display:grid;gap:6px;justify-items:center;font-size:.9rem}
 .style[aria-pressed="true"]{border-color:var(--fg);box-shadow:0 0 0 2px var(--fg) inset}
 .style canvas{width:100%;max-width:84px;aspect-ratio:4/5;border-radius:4px}
@@ -298,7 +298,7 @@ header .wrap{flex-wrap:wrap}
              tags: ["#pilatescommunity", "#pilatesfamily", "#pilatesgirls"],
              ex: { h: "Member Spotlight", d: "Thank you for being here", n: "huge well done to our saturday crew, six months of coming every week" } },
   };
-  const STYLES = { arch: "Arch", overlay: "Full photo", frame: "Frame" };
+  const STYLES = { arch: "Arch", overlay: "Full photo", frame: "Frame", circle: "Circle" };
 
   const $ = (id) => document.getElementById(id);
   const st = { type: "cls", style: "arch", photo: null, photoURL: null, px: .5, py: .5, zoom: 1, tagsOn: new Set(), tagsAll: [], hookIdx: 0, edited: false };
@@ -419,7 +419,24 @@ header .wrap{flex-wrap:wrap}
     if (st.photo) drawLogo(ctx, fullImg, B.teal, W - m - markW / 2, yTop + 6, markW);
     ctx.fillStyle = B.teal; ctx.fillRect(m, top + ph + 22, 64, 4);
   }
-  const DRAW = { arch: drawArch, overlay: drawOverlay, frame: drawFrame };
+  // Circle: echoes the logo's ring and head. Big circular photo, oversized headline bottom-left.
+  function drawCircle(ctx, W, H, story) {
+    ctx.fillStyle = B.blush; ctx.fillRect(0, 0, W, H);
+    const m = 90, cx = story ? W * 0.56 : W * 0.6, cy = story ? 760 : 470, r = story ? 380 : 320;
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+    if (st.photo) drawCover(ctx, st.photo, cx - r, cy - r, r * 2, r * 2);
+    else { ctx.fillStyle = B.blush2; ctx.fillRect(cx - r, cy - r, r * 2, r * 2); drawLogo(ctx, markImg, B.teal, cx, cy - r * 0.48, r * 1.15); }
+    ctx.restore();
+    const R2 = r + 24; ctx.strokeStyle = B.teal; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy, R2, 0, Math.PI * 2); ctx.stroke();
+    const a = Math.PI * 1.17, hx = cx + R2 * Math.cos(a), hy = cy + R2 * Math.sin(a), hr = story ? 52 : 46;
+    ctx.fillStyle = B.blush; ctx.beginPath(); ctx.arc(hx, hy, hr, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    brandLine(ctx, "POWR STUDIO", m, story ? 300 : 104, 24, B.teal, "left", .85);
+    const y0 = cy + R2 + (story ? 90 : 60);
+    ctx.fillStyle = B.teal; ctx.fillRect(m, y0, 72, 5);
+    headlineBlock(ctx, m, y0 + 18, W - 2 * m, story ? 96 : 84, 3, B.teal, "left");
+    if (!story) brandLine(ctx, "CLITHEROE", W - m, H - 56, 20, B.teal, "right", .7);
+  }
+  const DRAW = { arch: drawArch, overlay: drawOverlay, frame: drawFrame, circle: drawCircle };
 
   // ---------- render pipeline
   const SIZES = { feed: [1080, 1350], story: [1080, 1920] };

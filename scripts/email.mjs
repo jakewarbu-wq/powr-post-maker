@@ -20,7 +20,8 @@ const html = `<!doctype html><html><body style="margin:0;background:${blush};fon
 <tr><td style="padding:24px 24px 8px">
   <p style="margin:0;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#4E6F73">${esc(day)} · ${esc(p.pillar || "")}</p>
   <h1 style="margin:6px 0 0;font-size:22px;line-height:1.3;color:${teal}">Today's post is ready</h1>
-  <p style="margin:8px 0 0;font-size:15px;line-height:1.5">It takes about two minutes. Open the Ready to post page on your phone, tap <b>Post to Instagram feed</b>, then paste the caption.</p>
+  <p style="margin:8px 0 0;font-size:15px;line-height:1.5">It takes about two minutes. Open the <a href="${ready}" style="color:${teal};font-weight:bold">Ready to post page</a> on your phone, tap <b>Post to Instagram feed</b>, then paste the caption.</p>
+  <p style="margin:10px 0 0;font-size:15px"><a href="${ready}" style="color:${teal};font-weight:bold">👉 Go to Ready to post</a></p>
 </td></tr>
 <tr><td style="padding:16px 24px"><a href="${ready}"><img src="${SITE}/posts/${id}/feed.jpg" width="512" alt="${esc(p.headline)}" style="display:block;width:100%;max-width:512px;height:auto;border-radius:8px;border:0"></a></td></tr>
 <tr><td align="center" style="padding:0 24px 20px">
@@ -29,6 +30,7 @@ const html = `<!doctype html><html><body style="margin:0;background:${blush};fon
 <tr><td style="padding:0 24px 24px">
   <p style="margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#4E6F73">Caption</p>
   <div style="background:${blush};border-radius:10px;padding:14px;font-size:14px;line-height:1.5;white-space:pre-wrap">${esc(caption)}</div>
+  <p style="margin:16px 0 0;font-size:15px;text-align:center"><a href="${ready}" style="color:${teal};font-weight:bold">Open the Ready to post page →</a><br><span style="font-size:12px;color:#4E6F73">${ready}</span></p>
   <p style="margin:14px 0 0;font-size:13px;color:#4E6F73">Story too? Use <b>Post to Instagram Story</b> on the same page, and add the booking link sticker: https://app.classfit.com/Studio/247669</p>
 </td></tr>
 </table>
