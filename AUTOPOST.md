@@ -101,7 +101,7 @@ If any step fails, stop, and report the failing step and the error rather than p
 
 ## 5. Email the reminder
 
-Reminder emails: **OFF** (waiting for Jake to approve the test email; switch to ON once he does)
+Reminder emails: **ON** (approved by Jake on 2026-10-19)
 
 When this is ON, wait for the Pages workflow to finish so the images are live. Then build the email:
 

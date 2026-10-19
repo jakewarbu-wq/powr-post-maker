@@ -22,6 +22,7 @@ const html = `<!doctype html><html><body style="margin:0;background:${blush};fon
   <h1 style="margin:6px 0 0;font-size:22px;line-height:1.3;color:${teal}">Today's post is ready</h1>
   <p style="margin:8px 0 0;font-size:15px;line-height:1.5">It takes about two minutes. Open the <a href="${ready}" style="color:${teal};font-weight:bold">Ready to post page</a> on your phone, tap <b>Post to Instagram feed</b>, then paste the caption.</p>
   <p style="margin:10px 0 0;font-size:15px"><a href="${ready}" style="color:${teal};font-weight:bold">👉 Go to Ready to post</a></p>
+  <p style="margin:8px 0 0;font-size:14px">Not sure what to do? <a href="${SITE}/" style="color:${teal}">See the step-by-step guide</a></p>
 </td></tr>
 <tr><td style="padding:16px 24px"><a href="${ready}"><img src="${SITE}/posts/${id}/feed.jpg" width="512" alt="${esc(p.headline)}" style="display:block;width:100%;max-width:512px;height:auto;border-radius:8px;border:0"></a></td></tr>
 <tr><td align="center" style="padding:0 24px 20px">
@@ -36,5 +37,5 @@ const html = `<!doctype html><html><body style="margin:0;background:${blush};fon
 </table>
 <p style="font-size:12px;color:#4E6F73;margin:14px 0 0">POWR Studio · automatic post reminder · <a href="${SITE}/archive.html" style="color:#4E6F73">past posts</a></p>
 </td></tr></table></body></html>`;
-const text = `Today's POWR post is ready (${day}).\n\nOpen ${ready} on your phone, tap "Post to Instagram feed", then paste the caption.\n\nCaption:\n\n${caption}\n\nBooking link for Stories: https://app.classfit.com/Studio/247669`;
+const text = `Today's POWR post is ready (${day}).\n\nOpen ${ready} on your phone, tap "Post to Instagram feed", then paste the caption.\n\nStep-by-step guide: ${SITE}/\n\nCaption:\n\n${caption}\n\nBooking link for Stories: https://app.classfit.com/Studio/247669`;
 console.log(JSON.stringify({ subject, html, text }));
