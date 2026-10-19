@@ -27,7 +27,7 @@ The posts are still images with no photo:
 | Day | Pillar | `type` |
 |---|---|---|
 | Monday | Week ahead: the month's theme, what the week holds (key dates, seasonal moment) and a reason to book this week | `time` or `motiv` |
-| Wednesday | Teach something: one practical Pilates, Barre or posture tip tied to the season (for example, desk posture in dark winter weeks, or mobility for spring runners) | `cls` or `motiv` |
+| Wednesday | Teach something: one practical Pilates or posture tip tied to the season (for example, desk posture in dark winter weeks, or mobility for spring runners) | `cls` or `motiv` |
 | Friday | Monthly theme, key date or current offer from the calendar | `offer`, `news` or `cls` |
 | Saturday | Weekend and local: Rest and reset or Local Clitheroe from the calendar's weekly rhythm. Use a weekend stretch or self-care tip, a nod to the Ribble Valley in this season, or a "plan next week's classes" nudge. Keep it gentle and low pressure. | `motiv` or `cls` |
 
@@ -36,8 +36,8 @@ Rotate `style` through `arch`, `overlay` and `frame`, so it differs from the pre
 ## 2. Facts you may use
 
 - The studio is POWR Studio, 9 York Street, Clitheroe (Ribble Valley, Lancashire), Instagram @powrstudioclitheroe.
-- Classes are Reformer Pilates, Mat Pilates, Barre, Stretch, and PT / 1-2-1s. Booking is through the link in the bio (ClassFit).
-- Barre is the standout, because no other studio nearby offers it.
+- Classes to mention are Reformer Pilates, Mat Pilates, Stretch, and PT / 1-2-1s. Booking is through the link in the bio (ClassFit).
+- Barre is on hold: never mention Barre (in captions, headlines or hashtags), even where the calendar suggests it. Swap in another class. Jake will say when it is back.
 - Known prices (from the studio's ClassFit price list): a single Reformer class is £18, and the Reformer Foundations intro of 3 classes is £45. These undercut other local studios (£20 to £25), but never name a competitor. Use them when a post is about trying Reformer or about value.
 - Never invent any other prices, class times, dates, member names, testimonials or offers that aren't written in the calendar. If a calendar offer has no details, say "details in our Stories" or "link in bio".
 - Don't write member spotlights or anything that needs a real person's consent.

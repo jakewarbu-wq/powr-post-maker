@@ -271,11 +271,11 @@ header .wrap{flex-wrap:wrap}
   const SERIF = '"Cormorant Garamond",Georgia,serif';
   const LOC = "📍 POWR Studio, 9 York Street, Clitheroe";
 
-  const CORE = ["#powrstudio", "#clitheroe", "#pilatesclitheroe", "#ribblevalley", "#reformerpilates", "#barreclitheroe", "#lancashire"];
+  const CORE = ["#powrstudio", "#clitheroe", "#pilatesclitheroe", "#ribblevalley", "#reformerpilates", "#lancashire"];
   const TYPES = {
     cls:   { label: "A class", hooks: ["New on the timetable ✨", "Your next favourite class is here", "Come and move with us"],
              cta: "Spaces are limited, so book through the link in our bio.",
-             tags: ["#pilatesclass", "#barre", "#matpilates", "#pilatesforbeginners"],
+             tags: ["#pilatesclass", "#matpilates", "#pilatesforbeginners", "#corestrength"],
              ex: { h: "Saturday Reformer", d: "Saturdays · 9am · All levels", n: "new saturday morning reformer class starting this week. beginners and all levels welcome. a lovely way to start the weekend feeling strong" } },
     time:  { label: "Timetable", hooks: ["This week at POWR 🗓", "Here's what's on this week", "Plan your week of movement"],
              cta: "Book your spot through the link in our bio.",
@@ -536,8 +536,8 @@ header .wrap{flex-wrap:wrap}
   async function polishAI() {
     const btn = $("polishAI"); btn.disabled = true; const s = $("aiStatus"); s.className = "status"; s.textContent = "Writing… this can take up to a minute.";
     const t = TYPES[st.type];
-    const prompt = `You write Instagram captions for POWR Studio, Clitheroe's dedicated Pilates and Barre studio (9 York Street, Clitheroe, Ribble Valley; Instagram @powrstudioclitheroe). Classes: Reformer Pilates, Mat Pilates, Barre, Stretch, and PT / 1-2-1 sessions.
-Voice: warm, calm and encouraging; beginners and all fitness levels are welcome; words like strength, balance, mindful movement and wellbeing fit. Always write POWR in capitals. Barre is a standout: no other studio nearby offers it, so lean into it when the post is about Barre. Confident, never pushy. Example lines from the studio's website: "a welcoming space where movement, strength, and wellbeing come together"; "Expert-led classes designed to help you feel stronger, more balanced, and energised". British English spelling. Short lines, with a blank line between ideas. At most 3 emoji. No hashtags inside the caption.
+    const prompt = `You write Instagram captions for POWR Studio, a Pilates studio (9 York Street, Clitheroe, Ribble Valley; Instagram @powrstudioclitheroe). Classes: Reformer Pilates, Mat Pilates, Stretch, and PT / 1-2-1 sessions. Never mention Barre.
+Voice: warm, calm and encouraging; beginners and all fitness levels are welcome; words like strength, balance, mindful movement and wellbeing fit. Always write POWR in capitals. Confident, never pushy. Example lines from the studio's website: "a welcoming space where movement, strength, and wellbeing come together"; "Expert-led classes designed to help you feel stronger, more balanced, and energised". British English spelling. Short lines, with a blank line between ideas. At most 3 emoji. No hashtags inside the caption.
 
 Post type: ${t.label}
 Headline on the image: ${$("headline").value.trim() || "(none)"}
