@@ -67,7 +67,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
   <div class="wrap">
     <div>
       <h1>Ready to Post</h1>
-      <p>New posts appear here every Monday, Wednesday, Friday and Saturday morning. Save the images, copy the caption, then follow the steps in the Post Maker.</p>
+      <p>New posts appear here every Monday, Tuesday, Wednesday, Friday and Saturday morning. Save the images, copy the caption, then follow the steps in the Post Maker.</p>
     </div>
     <a class="back" href="archive.html">Past weeks</a>
     <a class="back" href="./" style="margin-left:0">Open the Post Maker</a>
@@ -95,7 +95,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
   const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} } };
   const fmt = (d) => { try { return new Date(d + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }); } catch { return d; } };
   // Day of the week filter
-  const DAYS = ["Monday", "Wednesday", "Friday", "Saturday"];
+  const DAYS = ["Monday", "Tuesday", "Wednesday", "Friday", "Saturday"];
   function dayOf(d) { try { return new Date(d.slice(0, 10) + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long" }); } catch { return ""; } }
   let pick = store.get("powr:day") || "All";
   function applyDay() {
@@ -122,7 +122,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
   }
   let posts = [];
   try { posts = await (await fetch("posts/index.json", { cache: "no-store" })).json(); } catch {}
-  if (!posts.length) { list.innerHTML = '<p class="empty">No posts yet. The next one arrives on Monday, Wednesday, Friday or Saturday morning.</p>'; return; }
+  if (!posts.length) { list.innerHTML = '<p class="empty">No posts yet. The next one arrives on Monday, Tuesday, Wednesday, Friday or Saturday morning.</p>'; return; }
   list.innerHTML = "";
   for (const item of posts) {
     let p; try { p = await (await fetch(`posts/${item.id}/post.json`, { cache: "no-store" })).json(); } catch { continue; }

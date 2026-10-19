@@ -1,6 +1,6 @@
-# Automatic posts (Monday, Wednesday, Friday, Saturday)
+# Automatic posts (Monday, Tuesday, Wednesday, Friday, Saturday)
 
-A scheduled Claude session runs these steps every Monday, Wednesday, Friday and Saturday morning, and adds one finished post to `posts/`. The owner picks it up from `ready.html` on the GitHub Pages site, which can be filtered by day of the week.
+A scheduled Claude session runs these steps every Monday, Tuesday, Wednesday, Friday and Saturday morning, and adds one finished post to `posts/`. The owner picks it up from `ready.html` on the GitHub Pages site, which can be filtered by day of the week.
 
 ## 1. Decide what today's post is about
 
@@ -18,7 +18,7 @@ Then read the content calendar Google Sheet `1nT0P1lHylH-bXXSEFmhkWF1_Gz0cOLcc__
 - **Key dates**: if a moment falls within the next 3 days, use it, unless it says "Check nearer the time", has an empty Date, or is marked Posted. Mention moments later in the week as "coming up".
 - **Weekly rhythm**: the pillar for the day.
 
-Read this week's earlier posts in `posts/` (up to 3 since Monday) and the last 8 entries in `posts/index.json`. The four posts each week should read as one connected set: same monthly theme, different angles, and no repeated headline or opening line.
+Read this week's earlier posts in `posts/` (up to 4 since Monday) and the last 10 entries in `posts/index.json`. The five posts each week should read as one connected set: same monthly theme, different angles, and no repeated headline or opening line.
 
 ### Pillar for each day
 
@@ -27,11 +27,12 @@ The posts are still images with no photo:
 | Day | Pillar | `type` |
 |---|---|---|
 | Monday | Week ahead: the month's theme, what the week holds (key dates, seasonal moment) and a reason to book this week | `time` or `motiv` |
+| Tuesday | Statement: one short, quotable line in the studio's voice (strength, posture, wellbeing, the season), with the caption expanding on it. Always use `style: "statement"`. The headline is the quote, sentence case, up to about 8 words. The detail is a short uppercase-friendly line such as "Reformer · Mat · Stretch". | `motiv` |
 | Wednesday | Teach something: one practical Pilates or posture tip tied to the season (for example, desk posture in dark winter weeks, or mobility for spring runners) | `cls` or `motiv` |
 | Friday | Monthly theme, key date or current offer from the calendar | `offer`, `news` or `cls` |
 | Saturday | Weekend and local: Rest and reset or Local Clitheroe from the calendar's weekly rhythm. Use a weekend stretch or self-care tip, a nod to the Ribble Valley in this season, or a "plan next week's classes" nudge. Keep it gentle and low pressure. | `motiv` or `cls` |
 
-Rotate `style` through `arch`, `overlay` and `frame`, so it differs from the previous post.
+Tuesday always uses `statement`. On other days, rotate `style` through `arch`, `overlay` and `frame`, so it differs from the previous non-Tuesday post.
 
 ## 2. Facts you may use
 
