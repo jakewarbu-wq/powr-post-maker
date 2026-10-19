@@ -42,6 +42,9 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
 .cap{display:grid;gap:10px;align-content:start;min-width:0}
 .cap pre{white-space:pre-wrap;word-break:break-word;font:inherit;margin:0;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;max-height:340px;overflow:auto}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ig{display:grid;gap:6px;background:var(--surface-2);border-radius:12px;padding:12px}
+.ig .btn{flex:1 1 180px}
+.hint{margin:0;font-size:.88rem;color:var(--muted)}
 .status{font-size:.9rem;color:var(--ok);min-height:1.3em;margin:0}
 .check{display:flex;gap:8px;align-items:center;font-weight:500;cursor:pointer}
 .check input{width:20px;height:20px;accent-color:var(--fg)}
@@ -82,8 +85,12 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
         <figure><img alt="Story image" loading="lazy" src="posts/${item.id}/story.jpg"><figcaption>Story</figcaption><a class="btn" download="powr-story-${item.id}.jpg" href="posts/${item.id}/story.jpg">Save Story</a></figure>
       </div>
       <div class="cap">
+        <div class="ig">
+          <div class="row"><button class="btn igbtn" data-kind="feed" type="button">Post to Instagram feed</button><button class="btn igbtn" data-kind="story" type="button">Post to Instagram Story</button></div>
+          <p class="hint">On your phone: this copies the caption, then opens the share menu. Pick <b>Instagram</b>, choose <b>Feed</b> or <b>Story</b>, and paste the caption when it asks.</p>
+        </div>
         <pre></pre>
-        <div class="row"><button class="btn copy" type="button">Copy caption</button><a class="btn ghost" href="./?post=${item.id}">Use my own photo instead</a></div>
+        <div class="row"><button class="btn ghost copy" type="button">Copy caption</button><a class="btn ghost" href="./?post=${item.id}">Use my own photo instead</a></div>
         <p class="status" aria-live="polite"></p>
         <label class="check"><input type="checkbox"> Posted</label>
       </div>`;
@@ -96,6 +103,23 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
       try { await navigator.clipboard.writeText(full); status.textContent = "Copied. Paste it into Instagram."; }
       catch { const r = document.createRange(); r.selectNodeContents(el.querySelector("pre")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); status.textContent = "The caption is selected. Tap Copy."; }
     };
+    // Post to Instagram: copy the caption, then hand the image to the phone's share menu (Instagram is in it).
+    const files = {};
+    for (const k of ["feed", "story"]) fetch(`posts/${item.id}/${k}.jpg`).then(r => r.blob()).then(b => { files[k] = new File([b], `powr-${k}-${item.id}.jpg`, { type: "image/jpeg" }); }).catch(() => {});
+    const fallback = (k) => {
+      const a = document.createElement("a"); a.href = `posts/${item.id}/${k}.jpg`; a.download = `powr-${k}-${item.id}.jpg`; document.body.append(a); a.click(); a.remove();
+      window.open("https://www.instagram.com/", "_blank", "noopener");
+      status.textContent = "This device can't hand images straight to Instagram, so the image is saved and the caption copied. Use the Instagram app on your phone to post it.";
+    };
+    el.querySelectorAll(".igbtn").forEach(btn => btn.onclick = async () => {
+      const k = btn.dataset.kind, f = files[k];
+      if (navigator.clipboard) navigator.clipboard.writeText(full).catch(() => {});
+      if (f && navigator.canShare && navigator.canShare({ files: [f] })) {
+        status.textContent = k === "feed" ? "Caption copied. Pick Instagram, choose Feed, then paste the caption." : "Pick Instagram and choose Story. Add your booking link sticker before sharing.";
+        try { await navigator.share({ files: [f] }); }
+        catch (e) { if (e && e.name !== "AbortError") fallback(k); }
+      } else fallback(k);
+    });
     const cb = el.querySelector("input"); const key = "powr:posted:" + item.id;
     cb.checked = !!store.get(key); el.classList.toggle("done", cb.checked);
     cb.onchange = () => { store.set(key, cb.checked ? "1" : ""); el.classList.toggle("done", cb.checked); };

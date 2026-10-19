@@ -74,6 +74,8 @@ input[type=range]{width:100%;accent-color:var(--fg)}
 .count{font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto}
 .suggest{display:none;background:var(--surface-2);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:.92rem;gap:10px;align-items:center;flex-wrap:wrap}
 .suggest.show{display:flex}
+.igbox{display:grid;gap:8px;background:var(--surface-2);border-radius:12px;padding:12px;margin-top:16px}
+.igbox .btn{flex:1 1 180px}
 .guide{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
 @media (max-width:760px){.guide{grid-template-columns:minmax(0,1fr)}}
 .guide h3{font-family:var(--display);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:.95rem;margin:0 0 10px}
@@ -168,6 +170,10 @@ header .wrap{flex-wrap:wrap}
           <button class="btn" id="saveStory" type="button">Save Story image</button>
         </div>
       </div>
+      <div class="igbox" id="igBox" hidden>
+        <div class="row"><button class="btn" id="igFeed" type="button">Post to Instagram feed</button><button class="btn" id="igStory" type="button">Post to Instagram Story</button></div>
+        <p class="note" style="margin:0">This copies the caption from step 3, then opens your phone's share menu. Pick <b>Instagram</b>, choose <b>Feed</b> or <b>Story</b>, and paste the caption when it asks.</p>
+      </div>
       <p class="status" id="saveStatus"></p>
       <p class="note" id="holdTip">On a phone you can also press and hold a preview and choose <b>Save to Photos</b>.</p>
     </section>
@@ -225,7 +231,7 @@ header .wrap{flex-wrap:wrap}
       <div>
         <h3>Feed post</h3>
         <ol>
-          <li>Tap <b>Save feed image</b> above, then <b>Copy caption and hashtags</b>.</li>
+          <li>On your phone, the quickest way is the <b>Post to Instagram feed</b> button above: it copies the caption and opens Instagram, so you can skip to step 4. Otherwise tap <b>Save feed image</b>, then <b>Copy caption and hashtags</b>.</li>
           <li>Open Instagram. Check you are on the studio account: your profile picture at the bottom right should be the studio's. If not, press and hold it to switch accounts.</li>
           <li>Tap the <b>+</b> button and choose <b>Post</b>.</li>
           <li>Pick the POWR image from your recent photos. If it looks cut down to a square, tap the <b>two small arrows</b> in the bottom-left corner of the photo so the whole image shows. Tap <b>Next</b>.</li>
@@ -606,6 +612,18 @@ Reply with JSON only: {"caption": string, "hashtags": [5 to 8 hashtags starting 
     $("zoom").oninput = e => { st.zoom = e.target.value / 100; render(); };
     $("saveFeed").onclick = () => saveImg("feed");
     $("saveStory").onclick = () => saveImg("story");
+    // Post to Instagram via the phone's share menu (works on the website copy; the Claude viewer blocks sharing)
+    try { if (!window.claude && navigator.canShare && navigator.canShare({ files: [new File(["x"], "x.jpg", { type: "image/jpeg" })] })) $("igBox").hidden = false; } catch {}
+    const igShare = async (kind) => {
+      if (navigator.clipboard) navigator.clipboard.writeText(fullCaption()).catch(() => {});
+      const s = $("saveStatus"); const b = blobs[kind]; if (!b) return;
+      const f = new File([b], `powr-${kind}-${new Date().toISOString().slice(0, 10)}.jpg`, { type: "image/jpeg" });
+      s.className = "status ok"; s.textContent = kind === "feed" ? "Caption copied. Pick Instagram, choose Feed, then paste the caption." : "Pick Instagram and choose Story. Add your booking link sticker before sharing.";
+      try { await navigator.share({ files: [f] }); }
+      catch (e) { if (e && e.name !== "AbortError") { s.className = "status err"; s.textContent = "Sharing didn't work here. Use Save, then post from the Instagram app."; } }
+    };
+    $("igFeed").onclick = () => igShare("feed");
+    $("igStory").onclick = () => igShare("story");
     $("polishLocal").onclick = () => { markEdited(); $("caption").value = tidy(); st.hookIdx++; updateCount(); saveDraft(); const s = $("aiStatus"); s.className = "status ok"; s.textContent = "Tidied. Tap again for a different opening line."; };
     $("polishAI").onclick = polishAI;
     $("useSuggest").onclick = () => { $("headline").value = $("suggestText").textContent; $("suggest").classList.remove("show"); markEdited(); render(); };
