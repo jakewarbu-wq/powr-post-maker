@@ -28,6 +28,10 @@ Then read the content calendar Google Sheet `1nT0P1lHylH-bXXSEFmhkWF1_Gz0cOLcc__
 
 Read this week's earlier posts in `posts/` (up to 3 since Monday) and the `post.json` of the last 30 posts (about 2 months). The four posts each week should read as one connected set: same monthly theme, different angles. Every post must be unique against those 30: no repeated or near-identical headline, detail line, opening line, tip, quote or call to action wording, and vary the hashtag mix. Before writing, list the angles already used in your head and pick a fresh one.
 
+### Learn from the best
+
+Read `PLAYBOOK.md`. Pick one pattern that suits today's pillar (see its table), and use a different pattern from the previous post. Apply the principle in POWR's own words: never copy another studio's wording, headline or idea, and never name another studio. Note the pattern in `source`, for example `"Monthly themes: October; playbook: teach-to-save"`.
+
 ### Pillar for each day
 
 The posts are still images with no photo:
