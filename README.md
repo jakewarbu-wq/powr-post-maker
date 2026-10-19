@@ -4,7 +4,7 @@ A one-page tool for POWR Studio, Clitheroe. Add a photo and a few words, and it 
 
 Everything runs in the browser. Nothing is uploaded anywhere.
 
-Open it at the GitHub Pages address for this repository (Settings → Pages).
+Open it at the GitHub Pages address for this repository (Settings → Pages). `index.html` is a simple start page with step-by-step instructions; the Post Maker itself is `maker.html`.
 
 ## Automatic posts
 

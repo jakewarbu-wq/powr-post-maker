@@ -1,4 +1,4 @@
-// Renders posts/<id>/post.json into feed.jpg and story.jpg using index.html,
+// Renders posts/<id>/post.json into feed.jpg and story.jpg using maker.html,
 // then rebuilds posts/index.json for the Ready to post page.
 // Usage: node scripts/render.mjs posts/2026-10-21
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
@@ -19,7 +19,7 @@ const launch = existsSync("/opt/pw-browsers/chromium") ? { executablePath: "/opt
 
 const browser = await chromium.launch(launch);
 const page = await browser.newPage();
-await page.goto(pathToFileURL(join(root, "index.html")).href);
+await page.goto(pathToFileURL(join(root, "maker.html")).href);
 await page.waitForFunction(() => window.POWR);
 await page.evaluate(() => window.POWR.ready);
 await page.evaluate((s) => window.POWR.applySpec(s), spec);

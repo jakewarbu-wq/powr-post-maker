@@ -56,7 +56,7 @@ pre{white-space:pre-wrap;word-break:break-word;font:inherit;margin:8px 0 0;backg
       <h1>Past Posts</h1>
       <p>Every post, grouped by week, with its caption.</p>
     </div>
-    <nav class="nav"><a href="ready.html">Ready to post</a><a href="./">Post Maker</a></nav>
+    <nav class="nav"><a href="ready.html">Ready to post</a><a href="maker.html">Post Maker</a></nav>
   </div>
 </header>
 <main class="wrap" id="weeks"><p class="empty">Loading…</p></main>
@@ -92,7 +92,7 @@ pre{white-space:pre-wrap;word-break:break-word;font:inherit;margin:8px 0 0;backg
         <div style="min-width:0">
           <div class="meta"><span class="day"></span><b></b><span class="pill"></span>${posted(p.id) ? '<span class="done">✓ Posted</span>' : ""}</div>
           <details><summary>Show caption</summary><pre></pre></details>
-          <div class="links"><a href="posts/${p.id}/feed.jpg" target="_blank" rel="noopener">Feed image</a><a href="posts/${p.id}/story.jpg" target="_blank" rel="noopener">Story image</a><button type="button">Copy caption</button><a href="./?post=${p.id}">Reuse in Post Maker</a></div>
+          <div class="links"><a href="posts/${p.id}/feed.jpg" target="_blank" rel="noopener">Feed image</a><a href="posts/${p.id}/story.jpg" target="_blank" rel="noopener">Story image</a><button type="button">Copy caption</button><a href="maker.html?post=${p.id}">Reuse in Post Maker</a></div>
         </div>`;
       r.querySelector(".day").textContent = fmt(d(p.date || p.id), { weekday: "short", day: "numeric", month: "short" });
       r.querySelector("b").textContent = p.title || p.headline || "Post";
