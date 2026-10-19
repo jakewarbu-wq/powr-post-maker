@@ -26,7 +26,7 @@ Then read the content calendar Google Sheet `1nT0P1lHylH-bXXSEFmhkWF1_Gz0cOLcc__
 - **Key dates**: if a moment falls within the next 3 days, use it, unless it says "Check nearer the time", has an empty Date, or is marked Posted. Mention moments later in the week as "coming up".
 - **Weekly rhythm**: the pillar for the day.
 
-Read this week's earlier posts in `posts/` (up to 3 since Monday) and the last 10 entries in `posts/index.json`. The four posts each week should read as one connected set: same monthly theme, different angles, and no repeated headline or opening line.
+Read this week's earlier posts in `posts/` (up to 3 since Monday) and the `post.json` of the last 30 posts (about 2 months). The four posts each week should read as one connected set: same monthly theme, different angles. Every post must be unique against those 30: no repeated or near-identical headline, detail line, opening line, tip, quote or call to action wording, and vary the hashtag mix. Before writing, list the angles already used in your head and pick a fresh one.
 
 ### Pillar for each day
 
