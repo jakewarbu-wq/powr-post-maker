@@ -1,6 +1,14 @@
-# Automatic posts (Monday, Tuesday, Wednesday, Friday, Saturday)
+# Automatic posts (4 a week)
 
-A scheduled Claude session runs these steps every Monday, Tuesday, Wednesday, Friday and Saturday morning, and adds one finished post to `posts/`. The owner picks it up from `ready.html` on the GitHub Pages site, which can be filtered by day of the week.
+A scheduled Claude session wakes every Monday, Tuesday, Wednesday, Friday and Saturday morning. Each week there are at most **4 posts**: Tuesday's Statement, plus 3 of Monday, Wednesday, Friday and Saturday. One of those four days is skipped at random each week. Each run adds at most one finished post to `posts/`. The owner picks it up from `ready.html` on the GitHub Pages site, which can be filtered by day of the week.
+
+## 0. Check whether today is the week's skip day
+
+```bash
+node scripts/skip-day.mjs
+```
+
+If `skipToday` is true, stop: make no post and send no email. Just say "No post today (this week's skip day)". Tuesday is never skipped. Also stop if `posts/` already holds 4 posts dated this week (Monday to Sunday).
 
 ## 1. Decide what today's post is about
 
@@ -18,7 +26,7 @@ Then read the content calendar Google Sheet `1nT0P1lHylH-bXXSEFmhkWF1_Gz0cOLcc__
 - **Key dates**: if a moment falls within the next 3 days, use it, unless it says "Check nearer the time", has an empty Date, or is marked Posted. Mention moments later in the week as "coming up".
 - **Weekly rhythm**: the pillar for the day.
 
-Read this week's earlier posts in `posts/` (up to 4 since Monday) and the last 10 entries in `posts/index.json`. The five posts each week should read as one connected set: same monthly theme, different angles, and no repeated headline or opening line.
+Read this week's earlier posts in `posts/` (up to 3 since Monday) and the last 10 entries in `posts/index.json`. The four posts each week should read as one connected set: same monthly theme, different angles, and no repeated headline or opening line.
 
 ### Pillar for each day
 

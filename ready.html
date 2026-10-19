@@ -67,7 +67,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
   <div class="wrap">
     <div>
       <h1>Ready to Post</h1>
-      <p>New posts appear here every Monday, Tuesday, Wednesday, Friday and Saturday morning. Save the images, copy the caption, then follow the steps in the Post Maker.</p>
+      <p>Four new posts appear here each week: every Tuesday, plus three of Monday, Wednesday, Friday and Saturday. Save the images, copy the caption, then follow the steps in the Post Maker.</p>
     </div>
     <a class="back" href="archive.html">Past weeks</a>
     <a class="back" href="./" style="margin-left:0">Open the Post Maker</a>
@@ -103,7 +103,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
     document.querySelectorAll("#days .chip").forEach(c => c.setAttribute("aria-pressed", c.dataset.day === pick));
     let none = document.getElementById("none");
     if (!none) { none = document.createElement("p"); none.id = "none"; none.className = "empty"; list.prepend(none); }
-    none.textContent = `No ${pick} posts yet. They arrive on ${pick} mornings.`;
+    none.textContent = `No ${pick} posts here yet.`;
     none.hidden = pick === "All" || document.querySelectorAll(".post:not([hidden])").length > 0;
   }
   function buildDays() {
@@ -122,7 +122,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
   }
   let posts = [];
   try { posts = await (await fetch("posts/index.json", { cache: "no-store" })).json(); } catch {}
-  if (!posts.length) { list.innerHTML = '<p class="empty">No posts yet. The next one arrives on Monday, Tuesday, Wednesday, Friday or Saturday morning.</p>'; return; }
+  if (!posts.length) { list.innerHTML = '<p class="empty">No posts yet. Four posts arrive each week, every Tuesday plus three other mornings.</p>'; return; }
   list.innerHTML = "";
   for (const item of posts) {
     let p; try { p = await (await fetch(`posts/${item.id}/post.json`, { cache: "no-store" })).json(); } catch { continue; }
