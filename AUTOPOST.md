@@ -85,3 +85,15 @@ Look at the rendered `feed.jpg` and `story.jpg` once. Check that the headline fi
 Then commit to `main` and push. The Pages workflow publishes the post to `ready.html`.
 
 If any step fails, stop, and report the failing step and the error rather than pushing a broken post.
+
+## 5. Email the reminder
+
+Reminder emails: **OFF** (waiting for Jake to approve the test email; switch to ON once he does)
+
+When this is ON, wait for the Pages workflow to finish so the images are live. Then build the email:
+
+```bash
+node scripts/email.mjs posts/YYYY-MM-DD
+```
+
+This prints `{subject, html, text}`. Send it with the Gmail connector from Jake's Gmail to `caroline@powrstudio.co.uk`: `htmlBody` = html, `body` = text, `subject` = subject. Send it once per post, and never to anyone else. If sending fails, say so in the thread reply; the post itself is still fine.
