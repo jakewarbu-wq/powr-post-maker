@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>POWR Ready to Post</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&display=swap">
+<style>
+/* Layout: one card per prepared post, newest first; images left, caption right on wide screens */
+:root{
+  --bg:#F7EFEC; --surface:#FFFFFF; --surface-2:#F1E3DE; --fg:#15464D; --muted:#4E6F73;
+  --line:#E3D0CA; --accent:#15464D; --accent-fg:#F7EFEC; --ok:#2E7D5B; --warn:#A2532A;
+  --font:"Jost","Avenir Next","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0E2427; --surface:#143236; --surface-2:#1A3E42; --fg:#F4E9E6; --muted:#B5CBCB;
+  --line:#2A5257; --accent:#F0D9D2; --accent-fg:#0E2427; --ok:#7CC9A4; --warn:#F0A57E; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.5}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{border-bottom:1px solid var(--line)}
+header .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding-block:20px}
+h1{font-weight:600;font-size:1.5rem;letter-spacing:.14em;text-transform:uppercase;margin:0}
+header p{margin:2px 0 0;color:var(--muted)}
+header a.back{margin-left:auto;color:var(--fg);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-weight:500;background:var(--surface)}
+main.wrap{padding-block:24px 64px;display:grid;gap:24px}
+.post{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px}
+.post.done{opacity:.6}
+@media (max-width:820px){.post{grid-template-columns:minmax(0,1fr)}}
+.top{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.top h2{margin:0;font-weight:600;font-size:1.15rem;text-wrap:balance}
+.pill{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;background:var(--surface-2);color:var(--muted);border-radius:999px;padding:2px 10px}
+.date{color:var(--muted);font-size:.9rem;font-variant-numeric:tabular-nums}
+.imgs{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px;align-items:end}
+.imgs figure{margin:0;display:grid;gap:8px}
+.imgs img{width:100%;height:auto;border-radius:8px;display:block;background:var(--surface-2)}
+.imgs figcaption{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.btn{font:inherit;font-weight:500;border-radius:10px;padding:10px 16px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-fg);cursor:pointer;text-decoration:none;display:inline-flex;justify-content:center;align-items:center;gap:6px}
+.btn.ghost{background:transparent;color:var(--fg);border-color:var(--line)}
+.cap{display:grid;gap:10px;align-content:start;min-width:0}
+.cap pre{white-space:pre-wrap;word-break:break-word;font:inherit;margin:0;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;max-height:340px;overflow:auto}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.status{font-size:.9rem;color:var(--ok);min-height:1.3em;margin:0}
+.check{display:flex;gap:8px;align-items:center;font-weight:500;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--fg)}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:28px;text-align:center;color:var(--muted)}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--fg) 45%,transparent);outline-offset:2px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div>
+      <h1>Ready to Post</h1>
+      <p>New posts appear here every Monday, Wednesday and Friday morning. Save the images, copy the caption, then follow the steps in the Post Maker.</p>
+    </div>
+    <a class="back" href="./">Open the Post Maker</a>
+  </div>
+</header>
+<main class="wrap" id="list">
+  <p class="empty">Loading posts…</p>
+</main>
+<script>
+(async () => {
+  const list = document.getElementById("list");
+  const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} } };
+  const fmt = (d) => { try { return new Date(d + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }); } catch { return d; } };
+  let posts = [];
+  try { posts = await (await fetch("posts/index.json", { cache: "no-store" })).json(); } catch {}
+  if (!posts.length) { list.innerHTML = '<p class="empty">No posts yet. The first ones arrive on the next Monday, Wednesday or Friday morning.</p>'; return; }
+  list.innerHTML = "";
+  for (const item of posts) {
+    let p; try { p = await (await fetch(`posts/${item.id}/post.json`, { cache: "no-store" })).json(); } catch { continue; }
+    const full = (p.caption || "").trim() + (p.hashtags?.length ? "\n\n" + p.hashtags.join(" ") : "");
+    const el = document.createElement("article"); el.className = "post";
+    el.innerHTML = `
+      <div class="top"><h2></h2><span class="pill"></span><span class="date"></span></div>
+      <div class="imgs">
+        <figure><img alt="Feed image" loading="lazy" src="posts/${item.id}/feed.jpg"><figcaption>Feed post</figcaption><a class="btn" download="powr-feed-${item.id}.jpg" href="posts/${item.id}/feed.jpg">Save feed</a></figure>
+        <figure><img alt="Story image" loading="lazy" src="posts/${item.id}/story.jpg"><figcaption>Story</figcaption><a class="btn" download="powr-story-${item.id}.jpg" href="posts/${item.id}/story.jpg">Save Story</a></figure>
+      </div>
+      <div class="cap">
+        <pre></pre>
+        <div class="row"><button class="btn copy" type="button">Copy caption</button><a class="btn ghost" href="./?post=${item.id}">Use my own photo instead</a></div>
+        <p class="status" aria-live="polite"></p>
+        <label class="check"><input type="checkbox"> Posted</label>
+      </div>`;
+    el.querySelector("h2").textContent = p.title || p.headline || "Post";
+    el.querySelector(".pill").textContent = p.pillar || "";
+    el.querySelector(".date").textContent = p.date ? "For " + fmt(p.date) : "";
+    el.querySelector("pre").textContent = full;
+    const status = el.querySelector(".status");
+    el.querySelector(".copy").onclick = async () => {
+      try { await navigator.clipboard.writeText(full); status.textContent = "Copied. Paste it into Instagram."; }
+      catch { const r = document.createRange(); r.selectNodeContents(el.querySelector("pre")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); status.textContent = "The caption is selected. Tap Copy."; }
+    };
+    const cb = el.querySelector("input"); const key = "powr:posted:" + item.id;
+    cb.checked = !!store.get(key); el.classList.toggle("done", cb.checked);
+    cb.onchange = () => { store.set(key, cb.checked ? "1" : ""); el.classList.toggle("done", cb.checked); };
+    list.append(el);
+  }
+})();
+</script>
+</body>
+</html>

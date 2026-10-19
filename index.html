@@ -97,6 +97,7 @@ header .wrap{flex-wrap:wrap}
       <p>Make a finished Instagram post and Story for POWR Studio, Clitheroe, in four steps.</p>
     </div>
     <nav class="links" aria-label="Planning">
+      <a href="https://jakewarbu-wq.github.io/powr-post-maker/ready.html" target="_blank" rel="noopener">Ready to post ↗</a>
       <a href="https://docs.google.com/spreadsheets/d/1nT0P1lHylH-bXXSEFmhkWF1_Gz0cOLcc__isC7RdcBM/edit" target="_blank" rel="noopener">Content calendar ↗</a>
       <a href="https://claude.ai/code/artifact/6ca33a62-56fc-4b55-8270-532165656d04" target="_blank" rel="noopener">Local competitor notes ↗</a>
     </nav>
@@ -628,7 +629,24 @@ Reply with JSON only: {"caption": string, "hashtags": [5 to 8 hashtags starting 
       }).catch(() => {});
     }
   }
-  init();
+  // ---------- automation hooks (used by the scheduled post generator and the Ready to post page)
+  function applySpec(p) {
+    if (p.type && TYPES[p.type]) st.type = p.type;
+    if (p.style && STYLES[p.style]) st.style = p.style;
+    $("headline").value = p.headline || ""; $("detail").value = p.detail || "";
+    $("notes").value = p.notes || ""; $("caption").value = p.caption || "";
+    if (Array.isArray(p.hashtags) && p.hashtags.length) resetTags(p.hashtags.map(normTag).filter(Boolean)); else resetTags();
+    st.edited = true; $("exTag").hidden = true; buildTypes(); buildStyles(); styleThumbs(); doRender(); updateCount();
+  }
+  async function exportAll() {
+    if (document.fonts) await document.fonts.ready;
+    const out = {}; for (const k of ["feed", "story"]) out[k] = paint(k).toDataURL("image/jpeg", 0.92); return out;
+  }
+  const ready = init().then(async () => {
+    const id = new URLSearchParams(location.search).get("post");
+    if (id && /^[\w-]+$/.test(id)) { try { const r = await fetch(`posts/${id}/post.json`); if (r.ok) applySpec(await r.json()); } catch {} }
+  });
+  window.POWR = { ready, applySpec, exportAll };
 })();
 </script>
 </body></html>
