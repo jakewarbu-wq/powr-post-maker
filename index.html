@@ -298,7 +298,7 @@ header .wrap{flex-wrap:wrap}
              tags: ["#pilatescommunity", "#pilatesfamily", "#pilatesgirls"],
              ex: { h: "Member Spotlight", d: "Thank you for being here", n: "huge well done to our saturday crew, six months of coming every week" } },
   };
-  const STYLES = { arch: "Arch", overlay: "Full photo", frame: "Frame", circle: "Circle" };
+  const STYLES = { arch: "Arch", overlay: "Full photo", frame: "Frame", statement: "Statement" };
 
   const $ = (id) => document.getElementById(id);
   const st = { type: "cls", style: "arch", photo: null, photoURL: null, px: .5, py: .5, zoom: 1, tagsOn: new Set(), tagsAll: [], hookIdx: 0, edited: false };
@@ -419,24 +419,53 @@ header .wrap{flex-wrap:wrap}
     if (st.photo) drawLogo(ctx, fullImg, B.teal, W - m - markW / 2, yTop + 6, markW);
     ctx.fillStyle = B.teal; ctx.fillRect(m, top + ph + 22, 64, 4);
   }
-  // Circle: echoes the logo's ring and head. Big circular photo, oversized headline bottom-left.
-  function drawCircle(ctx, W, H, story) {
-    ctx.fillStyle = B.blush; ctx.fillRect(0, 0, W, H);
-    const m = 90, cx = story ? W * 0.56 : W * 0.6, cy = story ? 760 : 470, r = story ? 380 : 320;
-    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
-    if (st.photo) drawCover(ctx, st.photo, cx - r, cy - r, r * 2, r * 2);
-    else { ctx.fillStyle = B.blush2; ctx.fillRect(cx - r, cy - r, r * 2, r * 2); drawLogo(ctx, markImg, B.teal, cx, cy - r * 0.48, r * 1.15); }
-    ctx.restore();
-    const R2 = r + 24; ctx.strokeStyle = B.teal; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy, R2, 0, Math.PI * 2); ctx.stroke();
-    const a = Math.PI * 1.17, hx = cx + R2 * Math.cos(a), hy = cy + R2 * Math.sin(a), hr = story ? 52 : 46;
-    ctx.fillStyle = B.blush; ctx.beginPath(); ctx.arc(hx, hy, hr, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    brandLine(ctx, "POWR STUDIO", m, story ? 300 : 104, 24, B.teal, "left", .85);
-    const y0 = cy + R2 + (story ? 90 : 60);
-    ctx.fillStyle = B.teal; ctx.fillRect(m, y0, 72, 5);
-    headlineBlock(ctx, m, y0 + 18, W - 2 * m, story ? 96 : 84, 3, B.teal, "left");
-    if (!story) brandLine(ctx, "CLITHEROE", W - m, H - 56, 20, B.teal, "right", .7);
+  // Statement: deeper blush, oversized serif italic words, a giant quote mark, optional tilted photo print.
+  function fitSerif(ctx, text, maxW, maxSize, minSize, maxLines) {
+    for (let sz = maxSize; sz >= minSize; sz -= 4) {
+      ctx.font = `italic 500 ${sz}px ${SERIF}`; const lines = wrap(ctx, text, maxW, 0);
+      if (lines.length <= maxLines && lines.every(l => ctx.measureText(l).width <= maxW)) return { sz, lines };
+    }
+    ctx.font = `italic 500 ${minSize}px ${SERIF}`; return { sz: minSize, lines: wrap(ctx, text, maxW, 0).slice(0, maxLines) };
   }
-  const DRAW = { arch: drawArch, overlay: drawOverlay, frame: drawFrame, circle: drawCircle };
+  function drawStatement(ctx, W, H, story) {
+    ctx.fillStyle = B.blush2; ctx.fillRect(0, 0, W, H);
+    const m = 96, maxW = W - 2 * m, fy = story ? 1640 : H - 120;
+    const text = $("headline").value.trim(), detail = $("detail").value.trim();
+    // measure the words first so the block can sit where it should
+    const f = text ? fitSerif(ctx, text, maxW, story ? 140 : (st.photo ? 104 : 124), 56, st.photo ? 3 : 4) : null;
+    const blockH = (f ? f.lines.length * f.sz * 0.98 + f.sz * 0.45 : 0) + (detail ? 58 : 0);
+    let top;
+    if (st.photo) {
+      const pw = story ? 470 : 400, ph = pw * 1.18, bd = 22, cx = W - m - pw / 2 - 10, cy = story ? 600 : 330;
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(0.06);
+      ctx.shadowColor = "rgba(21,70,77,.18)"; ctx.shadowBlur = 30; ctx.shadowOffsetY = 10;
+      ctx.fillStyle = "#FFFFFF"; ctx.fillRect(-pw / 2 - bd, -ph / 2 - bd, pw + 2 * bd, ph + bd + 80);
+      ctx.shadowColor = "transparent"; ctx.beginPath(); ctx.rect(-pw / 2, -ph / 2, pw, ph); ctx.clip();
+      drawCover(ctx, st.photo, -pw / 2, -ph / 2, pw, ph); ctx.restore();
+      top = cy + ph / 2 + (story ? 150 : 130);
+    } else {
+      top = Math.max(story ? 560 : 380, fy - (story ? 260 : 170) - blockH);
+    }
+    // giant opening quote mark, tucked above the words (or beside the photo)
+    const q = story ? 640 : 560; ctx.font = `italic 500 ${q}px ${SERIF}`; ctx.fillStyle = B.blush; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    ctx.fillText("\u201C", m - 40, st.photo ? (story ? 700 : 470) : top + q * 0.12);
+    let y = top;
+    if (f) {
+      ctx.font = `italic 500 ${f.sz}px ${SERIF}`; ctx.fillStyle = B.teal;
+      for (const l of f.lines) { y += f.sz * 0.98; ctx.fillText(l, m, y); }
+      y += f.sz * 0.45;
+    }
+    if (detail) {
+      ctx.fillStyle = B.teal; ctx.fillRect(m, y, 60, 4); y += 58;
+      let sz = 28; ctx.font = `500 ${sz}px ${DISPLAY}`;
+      while (spacedWidth(ctx, detail.toUpperCase(), sz * .22) > maxW && sz > 18) { sz -= 2; ctx.font = `500 ${sz}px ${DISPLAY}`; }
+      drawSpaced(ctx, detail.toUpperCase(), m, y, sz * .22, "left");
+    }
+    const mw = 74;
+    const mh = drawLogo(ctx, markImg, B.teal, m + mw / 2, fy - 40, mw);
+    brandLine(ctx, "POWR STUDIO · CLITHEROE", m + mw + 24, fy - 40 + mh / 2 + 8, 22, B.teal, "left", .85);
+  }
+  const DRAW = { arch: drawArch, overlay: drawOverlay, frame: drawFrame, statement: drawStatement };
 
   // ---------- render pipeline
   const SIZES = { feed: [1080, 1350], story: [1080, 1920] };
