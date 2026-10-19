@@ -25,6 +25,10 @@ header .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;paddin
 h1{font-weight:600;font-size:1.5rem;letter-spacing:.14em;text-transform:uppercase;margin:0}
 header p{margin:2px 0 0;color:var(--muted)}
 header a.back{margin-left:auto;color:var(--fg);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-weight:500;background:var(--surface)}
+.book{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding-block:0 18px}
+.book .label{font-weight:600;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase}
+.book a{color:var(--fg);font-weight:500;word-break:break-all}
+.book .btn{padding:7px 14px}
 main.wrap{padding-block:24px 64px;display:grid;gap:24px}
 .post{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px}
 .post.done{opacity:.6}
@@ -61,6 +65,12 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
     </div>
     <a class="back" href="./">Open the Post Maker</a>
   </div>
+  <div class="wrap book">
+    <span class="label">Booking link</span>
+    <a id="bookUrl" href="https://app.classfit.com/Studio/247669" target="_blank" rel="noopener">app.classfit.com/Studio/247669</a>
+    <button class="btn ghost" id="copyBook" type="button">Copy link</button>
+    <span class="hint" id="bookStatus" aria-live="polite">Paste it into a Story link sticker, or your bio.</span>
+  </div>
 </header>
 <main class="wrap" id="list">
   <p class="empty">Loading posts…</p>
@@ -68,6 +78,12 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
 <script>
 (async () => {
   const list = document.getElementById("list");
+  const BOOK = "https://app.classfit.com/Studio/247669";
+  document.getElementById("copyBook").onclick = async () => {
+    const st = document.getElementById("bookStatus");
+    try { await navigator.clipboard.writeText(BOOK); st.textContent = "Booking link copied."; }
+    catch { const r = document.createRange(); r.selectNodeContents(document.getElementById("bookUrl")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); st.textContent = "The link is selected. Tap Copy."; }
+  };
   const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} } };
   const fmt = (d) => { try { return new Date(d + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }); } catch { return d; } };
   let posts = [];
@@ -87,7 +103,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
       <div class="cap">
         <div class="ig">
           <div class="row"><button class="btn igbtn" data-kind="feed" type="button">Post to Instagram feed</button><button class="btn igbtn" data-kind="story" type="button">Post to Instagram Story</button></div>
-          <p class="hint">On your phone: this copies the caption, then opens the share menu. Pick <b>Instagram</b>, choose <b>Feed</b> or <b>Story</b>, and paste the caption when it asks.</p>
+          <p class="hint">On your phone: this copies the caption, then opens the share menu. Pick <b>Instagram</b>, choose <b>Feed</b> or <b>Story</b>, and paste the caption when it asks. For a Story, copy the booking link at the top first for the link sticker.</p>
         </div>
         <pre></pre>
         <div class="row"><button class="btn ghost copy" type="button">Copy caption</button><a class="btn ghost" href="./?post=${item.id}">Use my own photo instead</a></div>
