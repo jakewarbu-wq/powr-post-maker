@@ -377,7 +377,7 @@ header .wrap{flex-wrap:wrap}
              tags: ["#pilatescommunity", "#pilatesfamily", "#pilatesgirls"],
              ex: { h: "Member Spotlight", d: "Thank you for being here", n: "huge well done to our saturday crew, six months of coming every week" } },
   };
-  const STYLES = { arch: "Arch", overlay: "Full photo", frame: "Frame", statement: "Statement" };
+  const STYLES = { arch: "Arch", overlay: "Full photo", frame: "Frame", statement: "Statement", bold: "Bold", note: "Note card", split: "Split", echo: "Echo" };
 
   const $ = (id) => document.getElementById(id);
   const st = { type: "cls", style: "arch", photo: null, photoURL: null, px: .5, py: .5, zoom: 1, tagsOn: new Set(), tagsAll: [], hookIdx: 0, edited: false };
@@ -544,7 +544,97 @@ header .wrap{flex-wrap:wrap}
     const mh = drawLogo(ctx, markImg, B.teal, m + mw / 2, fy - 40, mw);
     brandLine(ctx, "POWR STUDIO · CLITHEROE", m + mw + 24, fy - 40 + mh / 2 + 8, 22, B.teal, "left", .85);
   }
-  const DRAW = { arch: drawArch, overlay: drawOverlay, frame: drawFrame, statement: drawStatement };
+
+  function rrect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+  function footerMark(ctx, x, y, color, text = "POWR STUDIO · CLITHEROE") {
+    const mw = 70, mh = drawLogo(ctx, markImg, color, x + mw / 2, y, mw);
+    brandLine(ctx, text, x + mw + 22, y + mh / 2 + 8, 21, color, "left", .85);
+  }
+  const KIND_LABEL = { cls: "CLASS NOTES", time: "THIS WEEK", motiv: "POWR TIP", offer: "OFFER", news: "STUDIO NEWS", love: "OUR MEMBERS" };
+  // Bold: white poster, giant stacked capitals.
+  function drawBold(ctx, W, H, story) {
+    ctx.fillStyle = B.white; ctx.fillRect(0, 0, W, H);
+    const m = 84, maxW = W - 2 * m, top = story ? 230 : 76;
+    footerMark(ctx, m, top, B.teal);
+    const text = $("headline").value.trim().toUpperCase(), detail = $("detail").value.trim();
+    let y = top + (story ? 170 : 130);
+    if (st.photo) { const ph = story ? 640 : 430; ctx.save(); rrect(ctx, m, y, maxW, ph, 28); ctx.clip(); drawCover(ctx, st.photo, m, y, maxW, ph); ctx.restore(); y += ph + 40; }
+    const band = story ? 300 : 190, avail = H - band - y - (story ? 220 : 0) - 50;
+    let sz = story ? 230 : 210, lines = [];
+    for (; sz >= 60; sz -= 4) { ctx.font = `600 ${sz}px ${DISPLAY}`; lines = wrap(ctx, text, maxW, sz * .02); if (lines.length * sz * .96 <= avail && lines.every(l => spacedWidth(ctx, l, sz * .02) <= maxW)) break; }
+    ctx.fillStyle = B.teal; ctx.font = `600 ${sz}px ${DISPLAY}`; ctx.textBaseline = "alphabetic";
+    const blockH = lines.length * sz * .96; y += Math.max(0, (avail - blockH) / 2);
+    for (const l of lines) { y += sz * .9; drawSpaced(ctx, l, m - sz * .04, y, sz * .02, "left"); y += sz * .06; }
+    const by = H - band - (story ? 220 : 0);
+    ctx.fillStyle = B.blush2; ctx.fillRect(0, by, W, band);
+    if (detail) { let s = story ? 52 : 48; ctx.font = `italic 500 ${s}px ${SERIF}`; while (ctx.measureText(detail).width > maxW - 80 && s > 28) { s -= 2; ctx.font = `italic 500 ${s}px ${SERIF}`; } ctx.fillStyle = B.teal; ctx.textAlign = "left"; ctx.fillText(detail, m, by + band / 2 + s * .3); }
+    ctx.font = `500 56px ${DISPLAY}`; ctx.textAlign = "right"; ctx.fillStyle = B.teal; ctx.fillText("→", W - m, by + band / 2 + 18); ctx.textAlign = "left";
+  }
+  // Note card: label pill and a white card on blush, for tips, offers and news.
+  function drawNote(ctx, W, H, story) {
+    ctx.fillStyle = B.blush2; ctx.fillRect(0, 0, W, H);
+    const m = 76, cw = W - 2 * m, detail = $("detail").value.trim();
+    let y = story ? 250 : 70; const footY = story ? 1640 : H - 110;
+    const probe = document.createElement("canvas").getContext("2d");
+    const f = fitHeadline(probe, $("headline").value.trim() || " ", cw - 120, story ? 80 : 72, 3);
+    const ch = 120 + f.lines.length * f.s * 1.22 + (detail ? 120 : 30);
+    if (st.photo) { const ph = story ? 760 : 560; ctx.save(); rrect(ctx, m, y, cw, ph, 30); ctx.clip(); drawCover(ctx, st.photo, m, y, cw, ph); ctx.restore(); y += ph - 70; }
+    else {
+      // dotted texture where a photo would go
+      const cy = footY - (story ? 200 : 110) - ch;
+      ctx.fillStyle = B.blush; const gap = 34; for (let yy = y + 20; yy < cy + 80; yy += gap) for (let xx = m + 20; xx < W - m; xx += gap) { ctx.beginPath(); ctx.arc(xx, yy, 4, 0, Math.PI * 2); ctx.fill(); }
+      y = cy;
+    }
+    ctx.save(); ctx.shadowColor = "rgba(21,70,77,.14)"; ctx.shadowBlur = 34; ctx.shadowOffsetY = 12; ctx.fillStyle = B.white; rrect(ctx, m, y, cw, ch, 26); ctx.fill(); ctx.restore();
+    ctx.fillStyle = B.teal; rrect(ctx, m, y, cw, 14, [26, 26, 0, 0]); ctx.fill();
+    const label = KIND_LABEL[st.type] || "POWR"; ctx.font = `600 24px ${DISPLAY}`; const lw = spacedWidth(ctx, label, 6) + 52;
+    ctx.fillStyle = B.blush; rrect(ctx, m + 60, y + 48, lw, 52, 26); ctx.fill(); ctx.fillStyle = B.teal; drawSpaced(ctx, label, m + 86, y + 83, 6, "left");
+    let ty = y + 130; ctx.fillStyle = B.teal; ctx.font = `600 ${f.s}px ${DISPLAY}`;
+    for (const l of f.lines) { ty += f.s; drawSpaced(ctx, l, m + 60, ty, f.sp, "left"); ty += f.s * .22; }
+    if (detail) { let s = 44; ctx.font = `italic 500 ${s}px ${SERIF}`; while (ctx.measureText(detail).width > cw - 120 && s > 26) { s -= 2; ctx.font = `italic 500 ${s}px ${SERIF}`; } ctx.textAlign = "left"; ctx.fillText(detail, m + 60, ty + 64); }
+    footerMark(ctx, m, footY, B.teal);
+  }
+  // Split: photo (or a pattern of the mark) on top, white panel below with a teal badge on the seam.
+  function drawSplit(ctx, W, H, story) {
+    const seam = story ? 1150 : 760;
+    if (st.photo) drawCover(ctx, st.photo, 0, 0, W, seam);
+    else {
+      ctx.fillStyle = B.blush; ctx.fillRect(0, 0, W, seam);
+      const step = 190; let row = 0;
+      for (let yy = -40; yy < seam; yy += step * .8, row++) for (let xx = (row % 2) * step / 2 - 40; xx < W + 40; xx += step) drawLogo(ctx, markImg, B.blush2, xx, yy, 120, 1);
+    }
+    ctx.fillStyle = B.white; ctx.fillRect(0, seam, W, H - seam);
+    const m = 84, maxW = W - 2 * m - 150, text = $("headline").value.trim(), detail = $("detail").value.trim();
+    const r = 78, bx = W - m - r, by = seam;
+    ctx.fillStyle = B.teal; ctx.beginPath(); ctx.arc(bx, by, r, 0, Math.PI * 2); ctx.fill(); drawLogo(ctx, markImg, B.blush, bx, by - 44, 88);
+    let y = seam + (story ? 110 : 80);
+    if (text) { const f = fitSerif(ctx, text, maxW, story ? 120 : 104, 52, 2); ctx.font = `italic 500 ${f.sz}px ${SERIF}`; ctx.fillStyle = B.teal; ctx.textAlign = "left"; for (const l of f.lines) { y += f.sz * .95; ctx.fillText(l, m, y); } y += f.sz * .3; }
+    if (detail) { let sz = 28; ctx.font = `500 ${sz}px ${DISPLAY}`; while (spacedWidth(ctx, detail.toUpperCase(), sz * .22) > W - 2 * m && sz > 18) { sz -= 2; ctx.font = `500 ${sz}px ${DISPLAY}`; } ctx.fillStyle = B.teal; y += 46; drawSpaced(ctx, detail.toUpperCase(), m, y, sz * .22, "left"); }
+    brandLine(ctx, "POWR STUDIO · CLITHEROE", m, story ? 1700 : H - 50, 21, B.teal, "left", .6);
+  }
+  // Echo: the headline repeated as outlines above a solid version.
+  function drawEcho(ctx, W, H, story) {
+    ctx.fillStyle = B.blush; ctx.fillRect(0, 0, W, H);
+    const m = 80, maxW = W - 2 * m, detail = $("detail").value.trim(), text = $("headline").value.trim().toUpperCase();
+    let top = story ? 260 : 80;
+    if (st.photo) { const ph = story ? 720 : 520, pw = story ? 720 : 620; ctx.save(); rrect(ctx, (W - pw) / 2, top, pw, ph, pw / 2 > ph ? 30 : [pw / 2, pw / 2, 30, 30]); ctx.clip(); drawCover(ctx, st.photo, (W - pw) / 2, top, pw, ph); ctx.restore(); top += ph + 50; }
+    const reps = st.photo ? 2 : 3, footY = story ? 1640 : H - 110, availTop = top, availBot = footY - (detail ? 150 : 60);
+    let sz = 150, lines = [];
+    for (; sz >= 48; sz -= 4) { ctx.font = `600 ${sz}px ${DISPLAY}`; lines = wrap(ctx, text, maxW, sz * .04); if (lines.length <= 2 && lines.every(l => spacedWidth(ctx, l, sz * .04) <= maxW) && lines.length * sz * .98 * reps <= availBot - availTop) break; }
+    const lh = sz * .98, block = lines.length * lh, total = block * reps;
+    let y = availTop + Math.max(0, (availBot - availTop - total) / 2);
+    ctx.font = `600 ${sz}px ${DISPLAY}`; ctx.textBaseline = "alphabetic";
+    for (let r = 0; r < reps; r++) {
+      const solid = r === reps - 1;
+      for (const l of lines) {
+        y += lh; const w = spacedWidth(ctx, l, sz * .04); let cx = (W - w) / 2;
+        for (const chh of l) { if (solid) { ctx.fillStyle = B.teal; ctx.fillText(chh, cx, y); } else { ctx.strokeStyle = B.teal; ctx.globalAlpha = r === 0 && reps === 3 ? .35 : .6; ctx.lineWidth = 2.5; ctx.strokeText(chh, cx, y); ctx.globalAlpha = 1; } cx += ctx.measureText(chh).width + sz * .04; }
+      }
+    }
+    if (detail) { let s = 50; ctx.font = `italic 500 ${s}px ${SERIF}`; while (ctx.measureText(detail).width > maxW && s > 28) { s -= 2; ctx.font = `italic 500 ${s}px ${SERIF}`; } ctx.fillStyle = B.teal; ctx.textAlign = "center"; ctx.fillText(detail, W / 2, y + 90); ctx.textAlign = "left"; }
+    const mw = 84; drawLogo(ctx, markImg, B.teal, W / 2, footY - 10, mw);
+  }
+  const DRAW = { arch: drawArch, overlay: drawOverlay, frame: drawFrame, statement: drawStatement, bold: drawBold, note: drawNote, split: drawSplit, echo: drawEcho };
 
   // ---------- render pipeline
   const SIZES = { feed: [1080, 1350], story: [1080, 1920] };
