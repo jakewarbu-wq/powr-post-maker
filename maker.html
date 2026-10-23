@@ -42,8 +42,11 @@ input:focus-visible,textarea:focus-visible,button:focus-visible,.drop:focus-with
 .drop{display:grid;place-items:center;text-align:center;gap:6px;border:2px dashed var(--line);border-radius:12px;padding:22px 14px;background:var(--bg);cursor:pointer;position:relative}
 .drop.over{border-color:var(--fg)}
 .drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
-.reelbox{display:grid;gap:10px;background:var(--surface-2);border-radius:12px;padding:14px;margin-top:14px}
-.reelbox video{width:min(100%,280px);border-radius:10px;background:#000}
+.reelbox{display:grid;gap:10px;background:var(--surface-2);border-radius:12px;padding:14px;align-content:start}
+.reelbox video,.reelbox canvas{width:min(100%,260px);border-radius:10px;background:#000;display:block}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabs [role=tab]{font:inherit;font-weight:500;font-size:1.05rem;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:10px 20px;cursor:pointer}
+.tabs [role=tab][aria-selected=true]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
 .drivebox{display:grid;gap:6px;margin-top:10px;justify-items:start}
 .drivebox a{text-decoration:none}
 .drop strong{font-family:var(--display);font-weight:500;font-size:1.05rem}
@@ -102,7 +105,7 @@ header .wrap{flex-wrap:wrap}
     <div class="mark" aria-hidden="true"></div>
     <div>
       <h1>POWR Post Maker</h1>
-      <p>Make a finished Instagram post and Story for POWR Studio, Clitheroe, in four steps.</p>
+      <p>Make a finished Instagram post, Story or Reel for POWR Studio, Clitheroe.</p>
     </div>
     <nav class="links" aria-label="Planning">
       <a href="https://jakewarbu-wq.github.io/powr-post-maker/" target="_blank" rel="noopener">Start page ↗</a>
@@ -115,7 +118,55 @@ header .wrap{flex-wrap:wrap}
 </header>
 
 <main class="wrap">
-  <div class="grid">
+  <div class="tabs" role="tablist" aria-label="What are you making?">
+    <button role="tab" id="tabPhoto" aria-controls="photoPane" aria-selected="true" type="button">📷 Photo post</button>
+    <button role="tab" id="tabReel" aria-controls="reelPane" aria-selected="false" type="button">🎬 Reel (video)</button>
+  </div>
+  <section class="step" id="reelPane" role="tabpanel" aria-labelledby="r1" hidden>
+    <h2 id="r1"><span class="n">1</span>Your video and words</h2>
+    <p class="lede">Choose a clip and add a few words. They sit softly over the video, with the POWR logo, and the Reel ends on the POWR end card.</p>
+    <div class="grid">
+      <div>
+        <div class="field">
+          <span class="label">Video <span class="hint">(iPhone videos are fine; the first 25 seconds are used)</span></span>
+          <div class="drop" id="vdrop">
+            <input type="file" id="video" accept="video/*,.mov,.mp4" aria-label="Choose a video">
+            <strong>Choose a video</strong>
+            <span class="hint">or drag one here</span>
+          </div>
+          <p class="status err" id="videoErr" hidden></p>
+          <div class="drivebox">
+            <a class="btn ghost" href="https://drive.google.com/drive/folders/1m1dMqCe4M0JNs2M_KG8E1RgWLUrP7yQd" target="_blank" rel="noopener">📁 Open the POWR photo folder</a>
+          </div>
+        </div>
+        <div class="field">
+          <label for="rHead">Words on the video <span class="hint">(short, 2–6 words)</span></label>
+          <input type="text" id="rHead" maxlength="50" placeholder="Inside the studio">
+        </div>
+        <div class="field">
+          <label for="rDetail">Small line under it <span class="hint">(optional)</span></label>
+          <input type="text" id="rDetail" maxlength="50" placeholder="Reformer · Mat · Stretch">
+        </div>
+        <div class="field"><div class="row"><button class="btn ghost" id="rGen" type="button">✨ Suggest words</button></div></div>
+      </div>
+      <div class="reelbox">
+        <b>Preview</b>
+        <canvas id="reelPeek" width="540" height="960" aria-label="Reel preview"></canvas>
+        <div class="row"><button class="btn" id="makeReel" type="button" disabled>Make my Reel</button></div>
+        <p class="note" style="margin:0">Making it takes as long as the video, so keep this page open. It's silent, so you can add music in Instagram.</p>
+        <p class="status" id="reelStatus" aria-live="polite"></p>
+        <video id="reelPreview" controls playsinline hidden></video>
+        <div class="row" id="reelActions" hidden><button class="btn" id="saveReel" type="button">Save Reel video</button><button class="btn" id="igReel" type="button">Post to Instagram as a Reel</button></div>
+        <ol class="note" style="margin:0;padding-left:20px">
+          <li>Tap <b>Post to Instagram as a Reel</b> (or save it, then open Instagram, tap <b>+</b> and choose <b>Reel</b>).</li>
+          <li>Pick Instagram, then <b>Reel</b>. Add music if you like, then tap <b>Next</b>.</li>
+          <li>Press and hold the caption box and tap <b>Paste</b> (the caption from step 2 is copied for you).</li>
+          <li>Tap <b>Share</b>.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+  <div class="grid" id="photoPane" role="tabpanel">
     <section class="step" aria-labelledby="s1">
       <h2 id="s1"><span class="n">1</span>Photo and words</h2>
       <p class="lede">Add a photo and a few words. The preview updates as you type.</p>
@@ -123,8 +174,8 @@ header .wrap{flex-wrap:wrap}
       <div class="field">
         <span class="label">Photo <span class="hint">(optional: without one you get a branded text post)</span></span>
         <div class="drop" id="drop">
-          <input type="file" id="photo" accept="image/*,video/*,.mov" aria-label="Choose a photo or video">
-          <strong>Choose a photo or video</strong>
+          <input type="file" id="photo" accept="image/*" aria-label="Choose a photo">
+          <strong>Choose a photo</strong>
           <span class="hint">or drag one here</span>
         </div>
         <div class="thumbrow" id="thumbrow" hidden>
@@ -190,21 +241,13 @@ header .wrap{flex-wrap:wrap}
         <div class="row"><button class="btn" id="igFeed" type="button">Post to Instagram feed</button><button class="btn" id="igStory" type="button">Post to Instagram Story</button></div>
         <p class="note" style="margin:0">This copies the caption from step 3, then opens your phone's share menu. Pick <b>Instagram</b>, choose <b>Feed</b> or <b>Story</b>, and paste the caption when it asks.</p>
       </div>
-      <div class="reelbox" id="reelBox" hidden>
-        <b>🎬 Reel video</b>
-        <p class="note" style="margin:0">Your video becomes a Reel: a 2-second title card, up to 25 seconds of your clip, then the POWR end card. It's silent, so you can add music in Instagram. Making it takes as long as the video, so keep this page open.</p>
-        <div class="row"><button class="btn" id="makeReel" type="button">Make my Reel</button></div>
-        <p class="status" id="reelStatus" aria-live="polite"></p>
-        <video id="reelPreview" controls playsinline hidden></video>
-        <div class="row" id="reelActions" hidden><button class="btn" id="saveReel" type="button">Save Reel video</button><button class="btn" id="igReel" type="button">Post to Instagram as a Reel</button></div>
-      </div>
       <p class="status" id="saveStatus"></p>
       <p class="note" id="holdTip">On a phone you can also press and hold a preview and choose <b>Save to Photos</b>.</p>
     </section>
   </div>
 
-  <section class="step" aria-labelledby="s3">
-    <h2 id="s3"><span class="n">3</span>Write the caption</h2>
+  <section class="step" id="capStep" aria-labelledby="s3">
+    <h2 id="s3"><span class="n" id="capNum">3</span>Write the caption</h2>
     <p class="lede">Jot down what you want to say, in your own words. Then press Write my caption to turn it into a finished caption.</p>
     <div class="grid" style="gap:22px">
       <div>
@@ -249,7 +292,7 @@ header .wrap{flex-wrap:wrap}
     </div>
   </section>
 
-  <section class="step" aria-labelledby="s4">
+  <section class="step" id="guideStep" aria-labelledby="s4">
     <h2 id="s4"><span class="n">4</span>Post it on Instagram</h2>
     <p class="lede">Follow these on your phone, signed in to <b>@powrstudioclitheroe</b>.</p>
     <div class="guide">
@@ -815,22 +858,22 @@ Reply with JSON only: {"caption": string, "hashtags": [5 to 8 hashtags starting 
   // ---------- photo input
   const isVideo = (f) => f && (f.type.startsWith("video/") || /\.(mov|mp4|m4v)$/i.test(f.name || ""));
   const once = (el, ev, ms) => new Promise((res, rej) => { const t = setTimeout(() => rej(new Error("timeout")), ms); el.addEventListener(ev, () => { clearTimeout(t); res(); }, { once: true }); el.addEventListener("error", () => { clearTimeout(t); rej(new Error("error")); }, { once: true }); });
-  async function setVideo(file) {
-    const url = URL.createObjectURL(file), v = document.createElement("video");
-    v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = url;
-    try {
-      await once(v, "loadeddata", 20000);
-      v.currentTime = Math.min(1.5, (v.duration || 3) / 3); await once(v, "seeked", 10000);
-    } catch { URL.revokeObjectURL(url); $("photoErr").textContent = "That video couldn't be opened on this device. Try a shorter clip, or an MP4."; $("photoErr").hidden = false; return; }
-    // A frame from the clip is the photo for the cover image and the Reel's title card.
-    const c = document.createElement("canvas"); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext("2d").drawImage(v, 0, 0);
-    const img = await loadImg(c.toDataURL("image/jpeg", 0.9));
-    if (st.photoURL) URL.revokeObjectURL(st.photoURL);
-    st.photo = img; st.photoURL = url; st.video = v; st.reel = null;
-    $("thumb").src = img.src; $("thumbrow").hidden = false; $("sliderField").hidden = false; $("reelBox").hidden = false;
-    $("reelPreview").hidden = $("reelActions").hidden = true; $("reelStatus").textContent = "";
-    st.px = st.py = .5; st.zoom = 1; $("px").value = $("py").value = 50; $("zoom").value = 100;
-    render(); styleThumbs();
+  // ---------- Reels: the clip with soft words and the POWR mark, then the end card
+  function drawReelText(x, W, H, head, detail, alpha = 1) {
+    if (alpha <= 0) return;
+    x.save(); x.globalAlpha = alpha;
+    const g = x.createLinearGradient(0, H * .55, 0, H); g.addColorStop(0, "rgba(13,50,55,0)"); g.addColorStop(1, "rgba(13,50,55,.55)");
+    x.fillStyle = g; x.fillRect(0, H * .55, W, H * .45);
+    const m = 84, maxW = W - 2 * m - 110; let y = H - 330;
+    let sz = 0, lines = [];
+    if (head) { for (sz = 76; sz >= 44; sz -= 4) { x.font = `italic 500 ${sz}px ${SERIF}`; lines = wrap(x, head, maxW, 0); if (lines.length <= 2 && lines.every(l => x.measureText(l).width <= maxW)) break; } }
+    const blockH = (lines.length ? lines.length * sz * 1.02 : 0) + (detail ? 52 : 0);
+    let top = y - blockH;
+    drawLogo(x, markImg, B.white, m + 34, top - 96, 68, .95);
+    x.fillStyle = B.white; x.textAlign = "left"; x.textBaseline = "alphabetic";
+    if (lines.length) { x.font = `italic 500 ${sz}px ${SERIF}`; for (const l of lines) { top += sz * 1.02; x.fillText(l, m, top); } }
+    if (detail) { let d = 26; x.font = `500 ${d}px ${DISPLAY}`; const t = detail.toUpperCase(); while (spacedWidth(x, t, d * .24) > maxW && d > 18) { d -= 2; x.font = `500 ${d}px ${DISPLAY}`; } x.fillStyle = B.blush; x.globalAlpha = alpha * .92; drawSpaced(x, t, m, top + 52, d * .24, "left"); }
+    x.restore();
   }
   function endCard() {
     const c = document.createElement("canvas"); c.width = 1080; c.height = 1920; const x = c.getContext("2d");
@@ -840,39 +883,53 @@ Reply with JSON only: {"caption": string, "hashtags": [5 to 8 hashtags starting 
     x.font = `500 30px ${DISPLAY}`; drawSpaced(x, "9 YORK STREET · CLITHEROE", 540, 560 + h + 240, 9, "center");
     return c;
   }
+  const rv = { v: null, url: null, blob: null, ext: "mp4" };
+  function drawVideoFrame(x, v, W, H) {
+    const iw = v.videoWidth, ih = v.videoHeight, k = Math.max(W / iw, H / ih), dw = iw * k, dh = ih * k;
+    x.drawImage(v, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  }
+  function peekReel() {
+    const c = $("reelPeek"), x = c.getContext("2d"), W = c.width, H = c.height;
+    x.save(); x.scale(W / 1080, H / 1920);
+    if (rv.v) drawVideoFrame(x, rv.v, 1080, 1920); else { x.fillStyle = "#33494c"; x.fillRect(0, 0, 1080, 1920); }
+    drawReelText(x, 1080, 1920, $("rHead").value.trim(), $("rDetail").value.trim());
+    x.restore();
+  }
+  async function setReelVideo(file) {
+    $("videoErr").hidden = true;
+    if (!isVideo(file)) { $("videoErr").textContent = "That isn't a video. Choose a MOV or MP4 clip."; $("videoErr").hidden = false; return; }
+    const url = URL.createObjectURL(file), v = document.createElement("video");
+    v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = url;
+    try { await once(v, "loadeddata", 20000); v.currentTime = Math.min(1.5, (v.duration || 3) / 3); await once(v, "seeked", 10000); }
+    catch { URL.revokeObjectURL(url); $("videoErr").textContent = "That video couldn't be opened on this device. Try a shorter clip, or an MP4."; $("videoErr").hidden = false; return; }
+    if (rv.url) URL.revokeObjectURL(rv.url);
+    Object.assign(rv, { v, url, blob: null }); $("makeReel").disabled = false; $("makeReel").textContent = "Make my Reel";
+    $("reelPreview").hidden = $("reelActions").hidden = true; $("reelStatus").textContent = ""; peekReel();
+  }
   async function makeReel() {
-    const v = st.video, s = $("reelStatus"), btn = $("makeReel"); if (!v) return;
+    const v = rv.v, s = $("reelStatus"), btn = $("makeReel"); if (!v) return;
     const types = ["video/mp4;codecs=avc1.42E01E", "video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm"];
     const mime = window.MediaRecorder && HTMLCanvasElement.prototype.captureStream && types.find(t => MediaRecorder.isTypeSupported(t));
     if (!mime) { s.className = "status err"; s.textContent = "This browser can't make videos. Try Safari on an iPhone, or Chrome."; return; }
     btn.disabled = true; $("reelActions").hidden = $("reelPreview").hidden = true;
-    const W = 1080, H = 1920, T = 2, E = 2.5, F = 0.4, len = Math.min(v.duration || 0, 25);
-    const title = paint("story", st.style, document.createElement("canvas")), end = endCard();
-    const c = document.createElement("canvas"); c.width = W; c.height = H; const x = c.getContext("2d");
-    const drawVid = () => {
-      const iw = v.videoWidth, ih = v.videoHeight, k = Math.max(W / iw, H / ih) * st.zoom, dw = iw * k, dh = ih * k;
-      x.drawImage(v, (W - dw) * st.px, (H - dh) * st.py, dw, dh);
-      drawLogo(x, markImg, B.white, W - 124, H - 270, 120, .9);
-    };
+    const W = 1080, H = 1920, E = 2.5, F = 0.5, len = Math.min(v.duration || 0, 25), head = $("rHead").value.trim(), detail = $("rDetail").value.trim();
+    const end = endCard(), c = document.createElement("canvas"); c.width = W; c.height = H; const x = c.getContext("2d");
     const rec = new MediaRecorder(c.captureStream(30), { mimeType: mime, videoBitsPerSecond: 6e6 }); const chunks = [];
     rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
     const stopped = new Promise(r => rec.onstop = r);
     v.pause(); v.currentTime = 0; try { await once(v, "seeked", 5000); } catch {}
-    x.drawImage(title, 0, 0); rec.start(250);
-    const total = T + len + E; let phase = 0, t0 = performance.now(), vStart = 0;
+    drawVideoFrame(x, v, W, H); rec.start(250); try { await v.play(); } catch {}
+    const total = len + E; let phase = 1, t0 = performance.now(), tEnd = 0;
     await new Promise(done => {
       const tick = () => {
         const t = (performance.now() - t0) / 1000;
-        if (phase === 0) {
-          x.drawImage(title, 0, 0);
-          if (t >= T - F) { phase = 1; vStart = t; v.play().catch(() => {}); }
-        } else if (phase === 1) {
-          drawVid();
-          const a = 1 - (t - vStart) / F; if (a > 0) { x.globalAlpha = a; x.drawImage(title, 0, 0); x.globalAlpha = 1; }
-          if (v.currentTime >= len || v.ended) { phase = 2; v.pause(); vStart = t; }
+        drawVideoFrame(x, v, W, H);
+        if (phase === 1) {
+          drawReelText(x, W, H, head, detail, Math.min(1, (t - .3) / F));
+          if (v.currentTime >= len || v.ended) { phase = 2; v.pause(); tEnd = t; }
         } else {
-          drawVid(); x.globalAlpha = Math.min(1, (t - vStart) / F); x.drawImage(end, 0, 0); x.globalAlpha = 1;
-          if (t - vStart >= E) { done(); return; }
+          drawReelText(x, W, H, head, detail, 1); x.globalAlpha = Math.min(1, (t - tEnd) / F); x.drawImage(end, 0, 0); x.globalAlpha = 1;
+          if (t - tEnd >= E) { done(); return; }
         }
         s.className = "status"; s.textContent = `Making your Reel… ${Math.min(Math.round(t), Math.round(total))} of ${Math.round(total)} seconds. Keep this page open.`;
         requestAnimationFrame(tick);
@@ -880,17 +937,22 @@ Reply with JSON only: {"caption": string, "hashtags": [5 to 8 hashtags starting 
       requestAnimationFrame(tick);
     });
     rec.stop(); await stopped;
-    const type = mime.split(";")[0]; st.reel = new Blob(chunks, { type }); st.reelExt = type === "video/mp4" ? "mp4" : "webm";
-    const pv = $("reelPreview"); if (pv.src) URL.revokeObjectURL(pv.src); pv.src = URL.createObjectURL(st.reel); pv.hidden = false;
+    const type = mime.split(";")[0]; rv.blob = new Blob(chunks, { type }); rv.ext = type === "video/mp4" ? "mp4" : "webm";
+    const pv = $("reelPreview"); if (pv.src) URL.revokeObjectURL(pv.src); pv.src = URL.createObjectURL(rv.blob); pv.hidden = false;
     $("reelActions").hidden = false; btn.disabled = false; btn.textContent = "Make it again";
-    s.className = "status ok"; s.textContent = st.reelExt === "mp4" ? "Your Reel is ready. Watch it, then save or post it." : "Your Reel is ready, but this browser saved it as WebM. If Instagram won't take it, make it again in Safari on an iPhone.";
+    s.className = "status ok"; s.textContent = rv.ext === "mp4" ? "Your Reel is ready. Watch it, then save or post it." : "Your Reel is ready, but this browser saved it as WebM. If Instagram won't take it, make it again in Safari on an iPhone.";
+  }
+  function showTab(reel) {
+    $("tabPhoto").setAttribute("aria-selected", !reel); $("tabReel").setAttribute("aria-selected", reel);
+    $("photoPane").hidden = reel; $("guideStep").hidden = reel; $("reelPane").hidden = !reel;
+    $("capNum").textContent = reel ? "2" : "3"; store.set("tab", reel ? "reel" : "photo"); if (reel) peekReel();
   }
   async function setPhoto(file) {
     $("photoErr").hidden = true;
-    if (isVideo(file)) return setVideo(file);
+    if (isVideo(file)) { showTab(true); return setReelVideo(file); }
     if (!file || !file.type.startsWith("image/")) { $("photoErr").textContent = "That isn't a photo or video. Choose a JPG, PNG, MOV or MP4."; $("photoErr").hidden = false; return; }
     const url = URL.createObjectURL(file);
-    try { const img = await loadImg(url); if (st.photoURL) URL.revokeObjectURL(st.photoURL); st.photo = img; st.photoURL = url; st.video = st.reel = null; $("reelBox").hidden = true; }
+    try { const img = await loadImg(url); if (st.photoURL) URL.revokeObjectURL(st.photoURL); st.photo = img; st.photoURL = url; }
     catch { $("photoErr").textContent = "That photo couldn't be opened. Try a JPG or PNG."; $("photoErr").hidden = false; return; }
     $("thumb").src = url; $("thumbrow").hidden = false; $("sliderField").hidden = false;
     st.px = st.py = .5; st.zoom = 1; $("px").value = $("py").value = 50; $("zoom").value = 100;
@@ -926,7 +988,7 @@ Reply with JSON only: {"caption": string, "hashtags": [5 to 8 hashtags starting 
     ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, () => drop.classList.remove("over")));
     drop.addEventListener("drop", e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) setPhoto(f); });
     document.addEventListener("paste", e => { const f = [...(e.clipboardData?.files || [])].find(f => f.type.startsWith("image/") || isVideo(f)); if (f) setPhoto(f); });
-    $("removePhoto").onclick = () => { if (st.photoURL) URL.revokeObjectURL(st.photoURL); st.photo = st.photoURL = st.video = st.reel = null; $("thumbrow").hidden = $("sliderField").hidden = $("reelBox").hidden = true; render(); styleThumbs(); };
+    $("removePhoto").onclick = () => { if (st.photoURL) URL.revokeObjectURL(st.photoURL); st.photo = st.photoURL = null; $("thumbrow").hidden = $("sliderField").hidden = true; render(); styleThumbs(); };
     $("px").oninput = e => { st.px = e.target.value / 100; render(); };
     $("py").oninput = e => { st.py = e.target.value / 100; render(); };
     $("zoom").oninput = e => { st.zoom = e.target.value / 100; render(); };
@@ -944,17 +1006,25 @@ Reply with JSON only: {"caption": string, "hashtags": [5 to 8 hashtags starting 
     };
     $("igFeed").onclick = () => igShare("feed");
     $("makeReel").onclick = makeReel;
-    const reelFile = () => new File([st.reel], `powr-reel-${new Date().toISOString().slice(0, 10)}.${st.reelExt}`, { type: st.reel.type });
-    $("saveReel").onclick = () => { if (!st.reel) return; const a = document.createElement("a"); a.href = URL.createObjectURL(st.reel); a.download = reelFile().name; document.body.append(a); a.click(); a.remove(); };
+    $("tabPhoto").onclick = () => showTab(false); $("tabReel").onclick = () => showTab(true);
+    $("video").addEventListener("change", e => { setReelVideo(e.target.files[0]); e.target.value = ""; });
+    const vdrop = $("vdrop");
+    ["dragenter", "dragover"].forEach(ev => vdrop.addEventListener(ev, e => { e.preventDefault(); vdrop.classList.add("over"); }));
+    ["dragleave", "drop"].forEach(ev => vdrop.addEventListener(ev, () => vdrop.classList.remove("over")));
+    vdrop.addEventListener("drop", e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) setReelVideo(f); });
+    ["rHead", "rDetail"].forEach(id => $(id).addEventListener("input", peekReel));
+    $("rGen").onclick = () => { const h = $("headline").value, d = $("detail").value; suggestWords(); $("rHead").value = $("headline").value; $("rDetail").value = $("detail").value; $("headline").value = h; $("detail").value = d; peekReel(); };
+    const reelFile = () => new File([rv.blob], `powr-reel-${new Date().toISOString().slice(0, 10)}.${rv.ext}`, { type: rv.blob.type });
+    $("saveReel").onclick = () => { if (!rv.blob) return; const a = document.createElement("a"); a.href = URL.createObjectURL(rv.blob); a.download = reelFile().name; document.body.append(a); a.click(); a.remove(); };
     $("igReel").onclick = async () => {
-      if (!st.reel) return; const f = reelFile(), s = $("reelStatus");
+      if (!rv.blob) return; const f = reelFile(), s = $("reelStatus");
       if (navigator.clipboard) navigator.clipboard.writeText(fullCaption()).catch(() => {});
       if (navigator.canShare && navigator.canShare({ files: [f] })) {
         s.className = "status ok"; s.textContent = "Caption copied. Pick Instagram, choose Reel, then paste the caption.";
         try { await navigator.share({ files: [f] }); } catch (e) { if (e && e.name !== "AbortError") { s.className = "status err"; s.textContent = "Sharing didn't work here. Use Save Reel video, then post from the Instagram app."; } }
       } else { $("saveReel").click(); s.className = "status ok"; s.textContent = "Saved, and the caption is copied. Post it from the Instagram app."; }
     };
-    $("igStory").onclick = () => igShare("story");
+    if (store.get("tab") === "reel") showTab(true);
     $("polishLocal").onclick = () => { markEdited(); $("caption").value = tidy(); st.hookIdx++; updateCount(); saveDraft(); const s = $("aiStatus"); s.className = "status ok"; s.textContent = "Caption written. Tap again for a different opening."; };
     $("polishAI").onclick = polishAI;
     $("genWords").onclick = () => { suggestWords(); markEdited(); render(); };
@@ -999,7 +1069,12 @@ Reply with JSON only: {"caption": string, "hashtags": [5 to 8 hashtags starting 
     const id = new URLSearchParams(location.search).get("post");
     if (id && /^[\w-]+$/.test(id)) { try { const r = await fetch(`posts/${id}/post.json`); if (r.ok) applySpec(await r.json()); } catch {} }
   });
-  window.POWR = { ready, applySpec, exportAll };
+  async function reelCards(head, detail) {
+    if (document.fonts) await document.fonts.ready;
+    const o = document.createElement("canvas"); o.width = 1080; o.height = 1920; drawReelText(o.getContext("2d"), 1080, 1920, head || "", detail || "");
+    return { overlay: o.toDataURL("image/png"), end: endCard().toDataURL("image/png") };
+  }
+  window.POWR = { ready, applySpec, exportAll, reelCards };
 })();
 </script>
 </body></html>

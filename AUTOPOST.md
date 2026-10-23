@@ -8,7 +8,7 @@ A scheduled Claude session wakes every Monday, Tuesday, Wednesday, Friday and Sa
 node scripts/skip-day.mjs
 ```
 
-If `skipToday` is true, stop: make no post and send no email. Just say "No post today (this week's skip day)". Tuesday is never skipped. Also stop if `posts/` already holds 4 posts dated this week (Monday to Sunday).
+If `skipToday` is true, stop: make no post and send no email. Just say "No post today (this week's skip day)". Tuesday is never skipped. Also stop if `posts/` already holds 4 image posts dated this week (Monday to Sunday). Reels (folders with a `reel.mp4`) don't count.
 
 ## 1. Decide what today's post is about
 
@@ -51,23 +51,13 @@ Tuesday always uses `statement`. On other days, pick a `style` that differs from
 
 ### Pick a photo from the Drive folder
 
-Photos for posts live in the Google Drive folder **POWR post photos** (folder id `1m1dMqCe4M0JNs2M_KG8E1RgWLUrP7yQd`). List its images with the Google Drive connector (`parentId = '1m1dMqCe4M0JNs2M_KG8E1RgWLUrP7yQd'` and `mimeType contains 'image/'`).
+Photos for posts live in the Google Drive folder **POWR post photos** (folder id `1m1dMqCe4M0JNs2M_KG8E1RgWLUrP7yQd`). The automatic posts only use its photos; videos are for Reels (see below). List its images with the Google Drive connector (`parentId = '1m1dMqCe4M0JNs2M_KG8E1RgWLUrP7yQd'` and `mimeType contains 'image/'`).
 
 - On Monday, Wednesday, Friday and Saturday, use a photo when the folder has one that hasn't appeared in the last 12 posts (check `photo.id` in their `post.json`). Pick the one used least recently; never-used photos come first, oldest upload first. Tuesday stays text-only.
 - If the folder is empty or every photo was used in the last 12 posts, make a text-only post as before.
 - Download it to the scratchpad (never into the repo: originals are not published) and pass it to the render step. Look at the photo first: skip it if it is blurry, sideways, or shows a face that isn't clearly a studio/marketing shot, and pick the next one.
 - With a photo, use a photo design (`arch`, `overlay`, `frame`, `split` or `bold`), and let the photo shape the post's angle where it fits.
 - Record it in `post.json`: `"photo": { "id": "<Drive file id>", "name": "<file name>" }`.
-
-### Videos (Reels)
-
-The same Drive folder can hold video clips (QuickTime `.mov` or `.mp4`, `mimeType contains 'video/'`). At most **one Reel a week**, on Wednesday or Saturday, when the folder has a clip that hasn't been used in the last 12 posts (check `video.id`). A Reel replaces that day's photo.
-
-- Download the clip to the scratchpad, never into the repo. If it is over about 200 MB or the download fails, skip videos today and carry on with a photo or text-only post.
-- Watch it first: pull 3 frames with `ffmpeg -ss <t> -i clip -frames:v 1 frame.jpg` and look at them. Skip clips that are sideways, dark, blurred, or show members who might not have agreed to be filmed.
-- Write `post.json` as normal, with `"video": { "id": "<Drive file id>", "name": "<file name>" }` and a photo design for the cover (`arch`, `frame` or `split`). Keep the headline short: it opens the Reel as a 2-second title card.
-- Build it with `node scripts/reel.mjs posts/YYYY-MM-DD path/to/clip.mov` instead of `render.mjs`. It writes `reel.mp4` (the first 25 seconds of the clip, muted, with the POWR title card and end card), plus `feed.jpg` (the cover) and `story.jpg`. Check two frames of `reel.mp4` before pushing.
-- The caption should suit a Reel: say what people are watching, with one call to action.
 
 ## 2. Facts you may use
 
@@ -133,3 +123,13 @@ node scripts/email.mjs posts/YYYY-MM-DD
 ```
 
 This prints `{subject, html, text}`. Send it with the Gmail connector from Jake's Gmail to `caroline@powrstudio.co.uk`: `htmlBody` = html, `body` = text, `subject` = subject. Send it once per post, and never to anyone else. If sending fails, say so in the thread reply; the post itself is still fine.
+
+## Reels (on request, for Sundays)
+
+Reels are separate from the 4 image posts and are never made automatically. Make one only when Jake or Caroline asks for it in the thread.
+
+1. Use the clip they name, or else the newest video in the **POWR post photos** folder (`mimeType contains 'video/'`, QuickTime `.mov` or `.mp4`) that no earlier post has used (`video.id`). Download it to the scratchpad, never into the repo.
+2. Look at 3 frames first (`ffmpeg -ss <t> -i clip -frames:v 1 frame.jpg`). If it is sideways, dark, blurred, or shows members who may not have agreed to be filmed, say so and ask before going on.
+3. Date it for the coming Sunday (today if it's Sunday): write `posts/YYYY-MM-DD/post.json` with `"day": "Sunday"`, `"pillar": "Reel"`, `"type"`, a short `headline` (2 to 6 words, shown softly over the video), an optional `detail`, the caption and hashtags (same voice and rules as above, written for a video), and `"video": { "id": "<Drive file id>", "name": "<file name>" }`. No `style` is needed.
+4. Run `node scripts/reel.mjs posts/YYYY-MM-DD path/to/clip.mov`. It makes `reel.mp4`: up to 25 seconds of the clip, muted, with the words and POWR mark, then the POWR end card, plus `feed.jpg` as the cover. Check two frames of `reel.mp4`, then commit and push.
+5. If reminder emails are ON, send the email as in step 5 (it says the Reel is for Sunday).

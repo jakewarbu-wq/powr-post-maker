@@ -68,7 +68,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
   <div class="wrap">
     <div>
       <h1>Ready to Post</h1>
-      <p>Four new posts appear here each week: every Tuesday, plus three of Monday, Wednesday, Friday and Saturday. Save the images, copy the caption, then follow the steps in the Post Maker.</p>
+      <p>Four new posts appear here each week: every Tuesday, plus three of Monday, Wednesday, Friday and Saturday. Reels you ask for appear on Sundays. Save the images, copy the caption, then follow the steps in the Post Maker.</p>
     </div>
     <a class="back" href="archive.html">Past weeks</a>
     <a class="back" href="maker.html" style="margin-left:0">Open the Post Maker</a>
@@ -96,7 +96,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
   const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} } };
   const fmt = (d) => { try { return new Date(d + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }); } catch { return d; } };
   // Day of the week filter
-  const DAYS = ["Monday", "Tuesday", "Wednesday", "Friday", "Saturday"];
+  const DAYS = ["Monday", "Tuesday", "Wednesday", "Friday", "Saturday", "Sunday"];
   function dayOf(d) { try { return new Date(d.slice(0, 10) + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long" }); } catch { return ""; } }
   let pick = store.get("powr:day") || "All";
   function applyDay() {
@@ -132,16 +132,16 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
     el.innerHTML = `
       <div class="top"><span class="dayname"></span><h2></h2><span class="pill"></span><span class="date"></span></div>
       <div class="imgs">
-        <figure><img alt="Feed image" loading="lazy" src="posts/${item.id}/feed.jpg"><figcaption>${item.reel ? "Feed cover" : "Feed post"}</figcaption><a class="btn" download="powr-feed-${item.id}.jpg" href="posts/${item.id}/feed.jpg">Save feed</a></figure>
+        <figure><img alt="Feed image" loading="lazy" src="posts/${item.id}/feed.jpg"><figcaption>${item.reel ? "Reel cover" : "Feed post"}</figcaption><a class="btn" download="powr-${item.reel ? "cover" : "feed"}-${item.id}.jpg" href="posts/${item.id}/feed.jpg">${item.reel ? "Save cover" : "Save feed"}</a></figure>
         ${item.reel
-          ? `<figure><video controls playsinline muted preload="metadata" poster="posts/${item.id}/story.jpg" src="posts/${item.id}/reel.mp4"></video><figcaption>Reel video</figcaption><a class="btn" download="powr-reel-${item.id}.mp4" href="posts/${item.id}/reel.mp4">Save Reel</a></figure>`
+          ? `<figure><video controls playsinline muted preload="metadata" poster="posts/${item.id}/feed.jpg" src="posts/${item.id}/reel.mp4"></video><figcaption>Reel video</figcaption><a class="btn" download="powr-reel-${item.id}.mp4" href="posts/${item.id}/reel.mp4">Save Reel</a></figure>`
           : `<figure><img alt="Story image" loading="lazy" src="posts/${item.id}/story.jpg"><figcaption>Story</figcaption><a class="btn" download="powr-story-${item.id}.jpg" href="posts/${item.id}/story.jpg">Save Story</a></figure>`}
       </div>
       <div class="cap">
         <div class="ig">
           ${item.reel
             ? `<div class="row"><button class="btn igbtn" data-kind="reel" type="button">Post to Instagram as a Reel</button><button class="btn igbtn" data-kind="reelstory" type="button">Post to Instagram Story</button></div>
-          <p class="hint">On your phone: this copies the caption, then opens the share menu. Pick <b>Instagram</b>, choose <b>Reel</b> (or <b>Story</b>), and paste the caption when it asks. You can add music in Instagram. For the Reel's cover, use <b>Feed cover</b> (save it first).</p>`
+          <p class="hint">On your phone: this copies the caption, then opens the share menu. Pick <b>Instagram</b>, choose <b>Reel</b> (or <b>Story</b>), and paste the caption when it asks. You can add music in Instagram. For the Reel's cover, save the <b>Reel cover</b> first and pick it in Instagram.</p>`
             : `<div class="row"><button class="btn igbtn" data-kind="feed" type="button">Post to Instagram feed</button><button class="btn igbtn" data-kind="story" type="button">Post to Instagram Story</button></div>
           <p class="hint">On your phone: this copies the caption, then opens the share menu. Pick <b>Instagram</b>, choose <b>Feed</b> or <b>Story</b>, and paste the caption when it asks. For a Story, copy the booking link at the top first for the link sticker.</p>`}
         </div>
