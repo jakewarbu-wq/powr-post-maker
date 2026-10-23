@@ -152,6 +152,10 @@ header .wrap{flex-wrap:wrap}
         <label for="detail">Small line under it <span class="hint">(day, time or a call to action)</span></label>
         <input type="text" id="detail" maxlength="70">
       </div>
+      <div class="field">
+        <div class="row"><button class="btn ghost" id="genWords" type="button">✨ Suggest a headline and small line</button></div>
+        <span class="hint" id="genHint">Ideas match what the post is about and the time of year. Tap again for another.</span>
+      </div>
 
       <div class="field" style="margin-bottom:0">
         <span class="label">Design</span>
@@ -289,6 +293,49 @@ header .wrap{flex-wrap:wrap}
     "Dark nights in Clitheroe? A warm studio and a good stretch help.",
     "December gets busy, so give yourself an hour of calm and strength.",
   ];
+  // Headline and small-line ideas (no AI): seasonal lines by month, then lines for each post type.
+  const MONTH_HEADS = [
+    ["New Year, No Punishment", "Gentle Is Still Strong", "Start Where You Are"],
+    ["Love Your Body Strong", "Warm Up Your Week", "Bring a Friend to Class"],
+    ["Spring Into Strength", "Lighter Evenings Are Back", "Strong Women, Strong Studio"],
+    ["Your Spring Reset", "Breathe Out the Stress", "Mobility for Spring Miles"],
+    ["Move for Your Mind", "Feel Good This May", "Spring Into Reformer"],
+    ["Strong at Every Age", "Summer Strong", "Long Days, Strong Body"],
+    ["Strong, Not Summer Body", "Holiday-Proof Your Routine", "Stay Strong This Summer"],
+    ["Slow Summer Stretch", "Local Love, Clitheroe", "Get September Sorted"],
+    ["Your September Reset", "Back Into Routine", "New Term, New Habit"],
+    ["Dark Nights, Strong Habits", "Cosy Studio, Strong Core", "Autumn Strong"],
+    ["Strength for Every Body", "Warm Up Winter", "Pilates Isn't Just for Women"],
+    ["Calm in the Christmas Rush", "Finish the Year Strong", "Give the Gift of POWR"],
+  ];
+  const SEASON_DETAIL = ["Warm up in the studio · Link in bio", "Spring classes · Book via link in bio", "Summer classes · Book via link in bio", "Beat the dark evenings · Link in bio"];
+  const TYPE_WORDS = {
+    cls:   { h: ["Your First Reformer Class", "No Experience Needed", "Come As You Are", "Find Your Strong"],
+             d: ["All levels welcome · Link in bio", "Beginners welcome", "Lots of people come on their own", "Book via the link in bio"] },
+    time:  { h: ["This Week at POWR", "Your Week of Movement", "Plan Your Week", "Book Your Calm In"],
+             d: ["Book via the link in bio", "Mon–Sat · Book via link in bio", "Spaces go fast · Link in bio"] },
+    motiv: { h: ["Progress, Not Perfection", "Strong for Everyday Life", "You Don't Need to Be Flexible", "Small Steps Add Up", "The Posture Check", "Myth vs Reality"],
+             d: ["Save this for later", "See you on the mat", "Send this to a friend", "Strength for everyday life"] },
+    offer: { h: ["New to POWR? Start Here", "3 Classes for £45", "Try Reformer for £18", "Your Reformer Intro"],
+             d: ["Reformer Foundations · 3 for £45", "£18 a Reformer class", "New clients · Link in bio", "No experience needed"] },
+    news:  { h: ["Studio News", "News From York Street", "A Quick Update"],
+             d: ["Read more in the caption", "Details in our Stories", "Questions? Send us a message"] },
+    love:  { h: ["This Is POWR", "Our POWR Community", "Thank You for Being Here"],
+             d: ["Thank you for being here", "Want to join them? Link in bio", "See you on the mat"] },
+  };
+  const SEASON_OF = (m) => [0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 0][m];
+  function suggestWords() {
+    const m = new Date().getMonth(), t = TYPE_WORDS[st.type] || TYPE_WORDS.motiv;
+    const heads = [], seasonal = MONTH_HEADS[m], own = t.h;
+    for (let i = 0; i < Math.max(seasonal.length, own.length); i++) { if (seasonal[i]) heads.push(seasonal[i]); if (own[i]) heads.push(own[i]); }
+    const details = [...t.d, SEASON_DETAIL[SEASON_OF(m)]];
+    const cur = $("headline").value.trim().toLowerCase();
+    let i = st.genIdx = (st.genIdx || 0);
+    if (heads[i % heads.length].toLowerCase() === cur) i++;
+    $("headline").value = heads[i % heads.length];
+    $("detail").value = details[i % details.length];
+    st.genIdx = i + 1;
+  }
   const REASSURE = "New to Pilates? No experience or flexibility needed, and lots of people come on their own.";
   const TIPS = [
     "Start your notes with a question or a feeling people recognise, like \"Stiff after a day at the desk?\"",
@@ -528,7 +575,7 @@ header .wrap{flex-wrap:wrap}
     const box = $("types"); box.innerHTML = "";
     for (const [k, t] of Object.entries(TYPES)) {
       const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = t.label; b.setAttribute("aria-pressed", k === st.type);
-      b.onclick = () => { st.type = k; st.hookIdx = 0; buildTypes(); resetTags(); if (!st.edited) applyExample(); render(); updateCount(); };
+      b.onclick = () => { st.type = k; st.hookIdx = 0; st.genIdx = 0; buildTypes(); resetTags(); if (!st.edited) applyExample(); render(); updateCount(); };
       box.append(b);
     }
   }
@@ -720,6 +767,7 @@ Reply with JSON only: {"caption": string, "hashtags": [5 to 8 hashtags starting 
     $("igStory").onclick = () => igShare("story");
     $("polishLocal").onclick = () => { markEdited(); $("caption").value = tidy(); st.hookIdx++; updateCount(); saveDraft(); const s = $("aiStatus"); s.className = "status ok"; s.textContent = "Caption written. Tap again for a different opening."; };
     $("polishAI").onclick = polishAI;
+    $("genWords").onclick = () => { suggestWords(); markEdited(); render(); };
     let tipIdx = Math.floor(Math.random() * TIPS.length);
     const showTip = () => { $("tipText").textContent = TIPS[tipIdx % TIPS.length]; };
     $("nextTip").onclick = () => { tipIdx++; showTip(); }; showTip();
