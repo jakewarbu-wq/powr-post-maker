@@ -59,6 +59,16 @@ Photos for posts live in the Google Drive folder **POWR post photos** (folder id
 - With a photo, use a photo design (`arch`, `overlay`, `frame`, `split` or `bold`), and let the photo shape the post's angle where it fits.
 - Record it in `post.json`: `"photo": { "id": "<Drive file id>", "name": "<file name>" }`.
 
+### Videos (Reels)
+
+The same Drive folder can hold video clips (QuickTime `.mov` or `.mp4`, `mimeType contains 'video/'`). At most **one Reel a week**, on Wednesday or Saturday, when the folder has a clip that hasn't been used in the last 12 posts (check `video.id`). A Reel replaces that day's photo.
+
+- Download the clip to the scratchpad, never into the repo. If it is over about 200 MB or the download fails, skip videos today and carry on with a photo or text-only post.
+- Watch it first: pull 3 frames with `ffmpeg -ss <t> -i clip -frames:v 1 frame.jpg` and look at them. Skip clips that are sideways, dark, blurred, or show members who might not have agreed to be filmed.
+- Write `post.json` as normal, with `"video": { "id": "<Drive file id>", "name": "<file name>" }` and a photo design for the cover (`arch`, `frame` or `split`). Keep the headline short: it opens the Reel as a 2-second title card.
+- Build it with `node scripts/reel.mjs posts/YYYY-MM-DD path/to/clip.mov` instead of `render.mjs`. It writes `reel.mp4` (the first 25 seconds of the clip, muted, with the POWR title card and end card), plus `feed.jpg` (the cover) and `story.jpg`. Check two frames of `reel.mp4` before pushing.
+- The caption should suit a Reel: say what people are watching, with one call to action.
+
 ## 2. Facts you may use
 
 - The studio is POWR Studio, 9 York Street, Clitheroe (Ribble Valley, Lancashire), Instagram @powrstudioclitheroe.

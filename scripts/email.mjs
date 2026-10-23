@@ -1,6 +1,6 @@
 // Builds the reminder email for posts/<id>/post.json and prints {subject, html, text} as JSON.
 // Usage: node scripts/email.mjs posts/2026-10-21
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join, resolve, basename } from "node:path";
 
 const SITE = "https://jakewarbu-wq.github.io/powr-post-maker";
@@ -11,6 +11,8 @@ const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").
 const day = new Date((p.date || id) + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
 const caption = (p.caption || "").trim() + (p.hashtags?.length ? "\n\n" + p.hashtags.join(" ") : "");
 const ready = `${SITE}/ready.html`;
+const reel = existsSync(join(dir, "reel.mp4"));
+const tap = reel ? "Post to Instagram as a Reel" : "Post to Instagram feed";
 const teal = "#15464D", blush = "#F4E9E6";
 
 const subject = `Today's POWR post is ready: ${p.title || p.headline}`;
@@ -20,7 +22,7 @@ const html = `<!doctype html><html><body style="margin:0;background:${blush};fon
 <tr><td style="padding:24px 24px 8px">
   <p style="margin:0;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#4E6F73">${esc(day)} · ${esc(p.pillar || "")}</p>
   <h1 style="margin:6px 0 0;font-size:22px;line-height:1.3;color:${teal}">Today's post is ready</h1>
-  <p style="margin:8px 0 0;font-size:15px;line-height:1.5">It takes about two minutes. Open the <a href="${ready}" style="color:${teal};font-weight:bold">Ready to post page</a> on your phone, tap <b>Post to Instagram feed</b>, then paste the caption.</p>
+  <p style="margin:8px 0 0;font-size:15px;line-height:1.5">It takes about two minutes. Open the <a href="${ready}" style="color:${teal};font-weight:bold">Ready to post page</a> on your phone, tap <b>${tap}</b>, then paste the caption.${reel ? " Today's post is a video Reel." : ""}</p>
   <p style="margin:10px 0 0;font-size:15px"><a href="${ready}" style="color:${teal};font-weight:bold">👉 Go to Ready to post</a></p>
   <p style="margin:8px 0 0;font-size:14px">Not sure what to do? <a href="${SITE}/" style="color:${teal}">See the step-by-step guide</a></p>
 </td></tr>
@@ -37,5 +39,5 @@ const html = `<!doctype html><html><body style="margin:0;background:${blush};fon
 </table>
 <p style="font-size:12px;color:#4E6F73;margin:14px 0 0">POWR Studio · automatic post reminder · <a href="${SITE}/archive.html" style="color:#4E6F73">past posts</a></p>
 </td></tr></table></body></html>`;
-const text = `Today's POWR post is ready (${day}).\n\nOpen ${ready} on your phone, tap "Post to Instagram feed", then paste the caption.\n\nStep-by-step guide: ${SITE}/\n\nCaption:\n\n${caption}\n\nBooking link for Stories: https://app.classfit.com/Studio/247669`;
+const text = `Today's POWR post is ready (${day}).\n\nOpen ${ready} on your phone, tap "${tap}", then paste the caption.\n\nStep-by-step guide: ${SITE}/\n\nCaption:\n\n${caption}\n\nBooking link for Stories: https://app.classfit.com/Studio/247669`;
 console.log(JSON.stringify({ subject, html, text }));

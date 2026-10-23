@@ -45,6 +45,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
 .date{color:var(--muted);font-size:.9rem;font-variant-numeric:tabular-nums}
 .imgs{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px;align-items:end}
 .imgs figure{margin:0;display:grid;gap:8px}
+.imgs video{width:100%;height:auto;border-radius:8px;display:block;background:var(--surface-2);aspect-ratio:9/16}
 .imgs img{width:100%;height:auto;border-radius:8px;display:block;background:var(--surface-2)}
 .imgs figcaption{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
 .btn{font:inherit;font-weight:500;border-radius:10px;padding:10px 16px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-fg);cursor:pointer;text-decoration:none;display:inline-flex;justify-content:center;align-items:center;gap:6px}
@@ -131,13 +132,18 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
     el.innerHTML = `
       <div class="top"><span class="dayname"></span><h2></h2><span class="pill"></span><span class="date"></span></div>
       <div class="imgs">
-        <figure><img alt="Feed image" loading="lazy" src="posts/${item.id}/feed.jpg"><figcaption>Feed post</figcaption><a class="btn" download="powr-feed-${item.id}.jpg" href="posts/${item.id}/feed.jpg">Save feed</a></figure>
-        <figure><img alt="Story image" loading="lazy" src="posts/${item.id}/story.jpg"><figcaption>Story</figcaption><a class="btn" download="powr-story-${item.id}.jpg" href="posts/${item.id}/story.jpg">Save Story</a></figure>
+        <figure><img alt="Feed image" loading="lazy" src="posts/${item.id}/feed.jpg"><figcaption>${item.reel ? "Feed cover" : "Feed post"}</figcaption><a class="btn" download="powr-feed-${item.id}.jpg" href="posts/${item.id}/feed.jpg">Save feed</a></figure>
+        ${item.reel
+          ? `<figure><video controls playsinline muted preload="metadata" poster="posts/${item.id}/story.jpg" src="posts/${item.id}/reel.mp4"></video><figcaption>Reel video</figcaption><a class="btn" download="powr-reel-${item.id}.mp4" href="posts/${item.id}/reel.mp4">Save Reel</a></figure>`
+          : `<figure><img alt="Story image" loading="lazy" src="posts/${item.id}/story.jpg"><figcaption>Story</figcaption><a class="btn" download="powr-story-${item.id}.jpg" href="posts/${item.id}/story.jpg">Save Story</a></figure>`}
       </div>
       <div class="cap">
         <div class="ig">
-          <div class="row"><button class="btn igbtn" data-kind="feed" type="button">Post to Instagram feed</button><button class="btn igbtn" data-kind="story" type="button">Post to Instagram Story</button></div>
-          <p class="hint">On your phone: this copies the caption, then opens the share menu. Pick <b>Instagram</b>, choose <b>Feed</b> or <b>Story</b>, and paste the caption when it asks. For a Story, copy the booking link at the top first for the link sticker.</p>
+          ${item.reel
+            ? `<div class="row"><button class="btn igbtn" data-kind="reel" type="button">Post to Instagram as a Reel</button><button class="btn igbtn" data-kind="reelstory" type="button">Post to Instagram Story</button></div>
+          <p class="hint">On your phone: this copies the caption, then opens the share menu. Pick <b>Instagram</b>, choose <b>Reel</b> (or <b>Story</b>), and paste the caption when it asks. You can add music in Instagram. For the Reel's cover, use <b>Feed cover</b> (save it first).</p>`
+            : `<div class="row"><button class="btn igbtn" data-kind="feed" type="button">Post to Instagram feed</button><button class="btn igbtn" data-kind="story" type="button">Post to Instagram Story</button></div>
+          <p class="hint">On your phone: this copies the caption, then opens the share menu. Pick <b>Instagram</b>, choose <b>Feed</b> or <b>Story</b>, and paste the caption when it asks. For a Story, copy the booking link at the top first for the link sticker.</p>`}
         </div>
         <pre></pre>
         <div class="row"><button class="btn ghost copy" type="button">Copy caption</button><a class="btn ghost" href="maker.html?post=${item.id}">Use my own photo instead</a></div>
@@ -157,17 +163,19 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
     };
     // Post to Instagram: copy the caption, then hand the image to the phone's share menu (Instagram is in it).
     const files = {};
-    for (const k of ["feed", "story"]) fetch(`posts/${item.id}/${k}.jpg`).then(r => r.blob()).then(b => { files[k] = new File([b], `powr-${k}-${item.id}.jpg`, { type: "image/jpeg" }); }).catch(() => {});
+    const SRC = { feed: ["feed.jpg", "image/jpeg"], story: ["story.jpg", "image/jpeg"], reel: ["reel.mp4", "video/mp4"], reelstory: ["reel.mp4", "video/mp4"] };
+    const kinds = item.reel ? ["reel"] : ["feed", "story"];
+    for (const k of kinds) fetch(`posts/${item.id}/${SRC[k][0]}`).then(r => r.blob()).then(b => { files[k] = new File([b], `powr-${k}-${item.id}.${SRC[k][0].split(".")[1]}`, { type: SRC[k][1] }); }).catch(() => {});
     const fallback = (k) => {
-      const a = document.createElement("a"); a.href = `posts/${item.id}/${k}.jpg`; a.download = `powr-${k}-${item.id}.jpg`; document.body.append(a); a.click(); a.remove();
+      const a = document.createElement("a"); a.href = `posts/${item.id}/${SRC[k][0]}`; a.download = `powr-${k}-${item.id}.${SRC[k][0].split(".")[1]}`; document.body.append(a); a.click(); a.remove();
       window.open("https://www.instagram.com/", "_blank", "noopener");
       status.textContent = "This device can't hand images straight to Instagram, so the image is saved and the caption copied. Use the Instagram app on your phone to post it.";
     };
     el.querySelectorAll(".igbtn").forEach(btn => btn.onclick = async () => {
-      const k = btn.dataset.kind, f = files[k];
+      const k = btn.dataset.kind, f = files[k === "reelstory" ? "reel" : k];
       if (navigator.clipboard) navigator.clipboard.writeText(full).catch(() => {});
       if (f && navigator.canShare && navigator.canShare({ files: [f] })) {
-        status.textContent = k === "feed" ? "Caption copied. Pick Instagram, choose Feed, then paste the caption." : "Pick Instagram and choose Story. Add your booking link sticker before sharing.";
+        status.textContent = k === "feed" ? "Caption copied. Pick Instagram, choose Feed, then paste the caption." : k === "reel" ? "Caption copied. Pick Instagram, choose Reel, then paste the caption." : "Pick Instagram and choose Story. Add your booking link sticker before sharing.";
         try { await navigator.share({ files: [f] }); }
         catch (e) { if (e && e.name !== "AbortError") fallback(k); }
       } else fallback(k);

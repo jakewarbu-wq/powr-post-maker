@@ -34,7 +34,7 @@ await browser.close();
 const postsDir = join(root, "posts");
 const list = readdirSync(postsDir, { withFileTypes: true })
   .filter(d => d.isDirectory() && existsSync(join(postsDir, d.name, "post.json")))
-  .map(d => { const p = JSON.parse(readFileSync(join(postsDir, d.name, "post.json"), "utf8")); return { id: d.name, date: p.date, title: p.title || p.headline, pillar: p.pillar || "" }; })
+  .map(d => { const p = JSON.parse(readFileSync(join(postsDir, d.name, "post.json"), "utf8")); return { id: d.name, date: p.date, title: p.title || p.headline, pillar: p.pillar || "", ...(existsSync(join(postsDir, d.name, "reel.mp4")) ? { reel: true } : {}) }; })
   .sort((a, b) => b.id.localeCompare(a.id));
 writeFileSync(join(postsDir, "index.json"), JSON.stringify(list, null, 2) + "\n");
 console.log(`Rendered ${basename(dir)}: feed.jpg, story.jpg; index has ${list.length} posts`);
