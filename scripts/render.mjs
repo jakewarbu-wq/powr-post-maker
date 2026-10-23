@@ -1,6 +1,7 @@
 // Renders posts/<id>/post.json into feed.jpg and story.jpg using maker.html,
 // then rebuilds posts/index.json for the Ready to post page.
-// Usage: node scripts/render.mjs posts/2026-10-21
+// Usage: node scripts/render.mjs posts/2026-10-21 [path/to/photo.jpg]
+// The photo (from the Drive "POWR post photos" folder) is only used for rendering; keep it outside the repo.
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
 import { join, resolve, basename } from "node:path";
 import { execSync } from "node:child_process";
@@ -11,6 +12,8 @@ const root = resolve(import.meta.dirname, "..");
 const dir = resolve(process.argv[2] || "");
 if (!existsSync(join(dir, "post.json"))) { console.error("Usage: node scripts/render.mjs posts/<id>  (needs post.json)"); process.exit(1); }
 const spec = JSON.parse(readFileSync(join(dir, "post.json"), "utf8"));
+const photo = process.argv[3] ? resolve(process.argv[3]) : null;
+if (photo && !existsSync(photo)) { console.error(`Photo not found: ${photo}`); process.exit(1); }
 
 let chromium;
 try { ({ chromium } = await import("playwright")); }
@@ -22,6 +25,7 @@ const page = await browser.newPage();
 await page.goto(pathToFileURL(join(root, "maker.html")).href);
 await page.waitForFunction(() => window.POWR);
 await page.evaluate(() => window.POWR.ready);
+if (photo) { await page.setInputFiles("#photo", photo); await page.waitForSelector("#thumbrow:not([hidden])"); }
 await page.evaluate((s) => window.POWR.applySpec(s), spec);
 const imgs = await page.evaluate(() => window.POWR.exportAll());
 for (const k of ["feed", "story"]) writeFileSync(join(dir, `${k}.jpg`), Buffer.from(imgs[k].split(",")[1], "base64"));
