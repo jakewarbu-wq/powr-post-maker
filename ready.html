@@ -30,9 +30,12 @@ header a.back{margin-left:auto;color:var(--fg);text-decoration:none;border:1px s
 .book .label{font-weight:600;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase}
 .book a{color:var(--fg);font-weight:500;word-break:break-all}
 .book .btn{padding:7px 14px}
-.days{display:flex;flex-wrap:wrap;gap:8px;padding-block:20px 0}
+.days{display:flex;flex-wrap:wrap;gap:8px;padding-block:12px 0}
 .chip{font:inherit;font-size:.95rem;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:7px 16px;cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.weekpick{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding-block:20px 0}
+.weekpick label{font-weight:600;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase}
+.weekpick select{font:inherit;font-size:1rem;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-height:44px;max-width:100%}
 .chip .n{opacity:.7;font-size:.85em;margin-left:4px;font-variant-numeric:tabular-nums}
 .dayname{font-weight:600;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 main.wrap{padding-block:24px 64px;display:grid;gap:24px}
@@ -68,9 +71,9 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
   <div class="wrap">
     <div>
       <h1>Ready to Post</h1>
-      <p>Four new posts appear here each week: every Tuesday, plus three of Monday, Wednesday, Friday and Saturday. Reels you ask for appear on Sundays. Save the images, copy the caption, then follow the steps in the Post Maker.</p>
+      <p>This week's posts are shown first. Pick an earlier week from the list. Four new posts appear each week: every Tuesday, plus three of Monday, Wednesday, Friday and Saturday. Reels you ask for appear on Sundays. Save the images, copy the caption, then follow the steps in the Post Maker.</p>
     </div>
-    <a class="back" href="archive.html">Past weeks</a>
+    <a class="back" href="archive.html">All past posts</a>
     <a class="back" href="maker.html" style="margin-left:0">Open the Post Maker</a>
   </div>
   <div class="wrap book">
@@ -80,6 +83,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
     <span class="hint" id="bookStatus" aria-live="polite">Paste it into a Story link sticker, or your bio.</span>
   </div>
 </header>
+<div class="wrap weekpick"><label for="week">Week</label><select id="week"></select></div>
 <div class="wrap days" id="days" role="group" aria-label="Show posts for"></div>
 <main class="wrap" id="list">
   <p class="empty">Loading posts…</p>
@@ -99,17 +103,26 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
   const DAYS = ["Monday", "Tuesday", "Wednesday", "Friday", "Saturday", "Sunday"];
   function dayOf(d) { try { return new Date(d.slice(0, 10) + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long" }); } catch { return ""; } }
   let pick = store.get("powr:day") || "All";
+  // Week filter: Monday to Sunday, this week by default
+  const iso = (d) => d.toISOString().slice(0, 10);
+  function mondayOf(ds) { const d = new Date(ds.slice(0, 10) + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return iso(d); }
+  function ddmm(ds) { return ds.slice(8, 10) + "-" + ds.slice(5, 7); }
+  function weekLabel(mon) { const s = new Date(mon + "T12:00:00Z"); s.setUTCDate(s.getUTCDate() + 6); return ddmm(mon) + " to " + ddmm(iso(s)); }
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" });
+  const thisWeek = mondayOf(today);
+  let week = thisWeek;
+  const inWeek = (a) => a.dataset.week === week;
   function applyDay() {
-    document.querySelectorAll(".post").forEach(a => { a.hidden = pick !== "All" && a.dataset.day !== pick; });
+    document.querySelectorAll(".post").forEach(a => { a.hidden = !inWeek(a) || (pick !== "All" && a.dataset.day !== pick); });
     document.querySelectorAll("#days .chip").forEach(c => c.setAttribute("aria-pressed", c.dataset.day === pick));
     let none = document.getElementById("none");
     if (!none) { none = document.createElement("p"); none.id = "none"; none.className = "empty"; list.prepend(none); }
-    none.textContent = `No ${pick} posts here yet.`;
-    none.hidden = pick === "All" || document.querySelectorAll(".post:not([hidden])").length > 0;
+    none.textContent = pick === "All" ? (week === thisWeek ? "No posts yet this week. The next one will appear here on its morning." : "No posts that week.") : `No ${pick} post in this week.`;
+    none.hidden = document.querySelectorAll(".post:not([hidden])").length > 0;
   }
   function buildDays() {
     const box = document.getElementById("days"); box.innerHTML = "";
-    const all = [...document.querySelectorAll(".post")];
+    const all = [...document.querySelectorAll(".post")].filter(inWeek);
     const extra = [...new Set(all.map(a => a.dataset.day))].filter(d => d && !DAYS.includes(d));
     if (pick !== "All" && !DAYS.includes(pick) && !extra.includes(pick)) pick = "All";
     for (const d of ["All", ...DAYS, ...extra]) {
@@ -120,6 +133,14 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
       box.append(b);
     }
     applyDay();
+  }
+  function buildWeeks() {
+    const sel = document.getElementById("week");
+    const weeks = [...new Set([thisWeek, ...[...document.querySelectorAll(".post")].map(a => a.dataset.week)])].filter(w => w <= thisWeek).sort().reverse();
+    sel.innerHTML = "";
+    for (const w of weeks) { const o = document.createElement("option"); o.value = w; o.textContent = (w === thisWeek ? "This week: " : "") + weekLabel(w); sel.append(o); }
+    sel.value = week;
+    sel.onchange = () => { week = sel.value; buildDays(); };
   }
   let posts = [];
   try { posts = await (await fetch("posts/index.json", { cache: "no-store" })).json(); } catch {}
@@ -150,7 +171,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
         <p class="status" aria-live="polite"></p>
         <label class="check"><input type="checkbox"> Posted</label>
       </div>`;
-    const day = dayOf(p.date || item.id); el.dataset.day = day;
+    const day = dayOf(p.date || item.id); el.dataset.day = day; el.dataset.week = mondayOf(p.date || item.id);
     el.querySelector(".dayname").textContent = day;
     el.querySelector("h2").textContent = p.title || p.headline || "Post";
     el.querySelector(".pill").textContent = p.pillar || "";
@@ -185,6 +206,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
     cb.onchange = () => { store.set(key, cb.checked ? "1" : ""); el.classList.toggle("done", cb.checked); };
     list.append(el);
   }
+  buildWeeks();
   buildDays();
 })();
 </script>
