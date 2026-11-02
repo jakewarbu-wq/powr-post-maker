@@ -47,7 +47,7 @@ The posts are still images with no photo:
 Tuesday always uses `statement`. On other days, pick a `style` that differs from the last two non-Tuesday posts, and use each design at least once every two weeks:
 
 - Text-only posts: `bold` (classes, beginners), `note` (tips, offers, news), `split` (seasonal or theme posts) or `echo` (a short motivational line of 2 to 4 words).
-- Posts with a photo: `arch`, `overlay`, `frame`, `split` or `bold`.
+- Posts with a photo: `arch`, `overlay`, `split` or `bold`. (Not `frame`: with a photo its headline sits on the picture and is hard to read.)
 
 ### Pick a photo from the Drive folder
 
@@ -56,7 +56,7 @@ Photos for posts live in the Google Drive folder **POWR post photos** (folder id
 - On Monday, Wednesday, Friday and Saturday, use a photo when the folder has one that hasn't appeared in the last 12 posts (check `photo.id` in their `post.json`). Pick the one used least recently; never-used photos come first, oldest upload first. Tuesday stays text-only.
 - If the folder is empty or every photo was used in the last 12 posts, make a text-only post as before.
 - Download it to the scratchpad (never into the repo: originals are not published) and pass it to the render step. Look at the photo first: skip it if it is blurry, sideways, or shows a face that isn't clearly a studio/marketing shot, and pick the next one.
-- With a photo, use a photo design (`arch`, `overlay`, `frame`, `split` or `bold`), and let the photo shape the post's angle where it fits.
+- With a photo, use a photo design (`arch`, `overlay`, `split` or `bold`), and let the photo shape the post's angle where it fits.
 - Record it in `post.json`: `"photo": { "id": "<Drive file id>", "name": "<file name>" }`.
 
 ## 2. Facts you may use
