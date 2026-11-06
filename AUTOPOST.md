@@ -55,6 +55,7 @@ Photos for posts live in the Google Drive folder **POWR post photos** (folder id
 
 - On Monday, Wednesday, Friday and Saturday, use a photo when the folder has one that hasn't appeared in the last 12 posts (check `photo.id` in their `post.json`). Pick the one used least recently; never-used photos come first, oldest upload first. Tuesday stays text-only.
 - If the folder is empty or every photo was used in the last 12 posts, make a text-only post as before.
+- While Barre is on hold, skip `PHOTO-2025-09-03-17-51-01.jpg` (id `1x6IBLAv6aBrGv-zKAyUDlApNG0zeJFUq`): the door sign in its mirror lists Barre.
 - Download it to the scratchpad (never into the repo: originals are not published) and pass it to the render step. Look at the photo first: skip it if it is blurry, sideways, or shows a face that isn't clearly a studio/marketing shot, and pick the next one.
 - With a photo, use a photo design (`arch`, `overlay`, `split` or `bold`), and let the photo shape the post's angle where it fits.
 - Record it in `post.json`: `"photo": { "id": "<Drive file id>", "name": "<file name>" }`.
