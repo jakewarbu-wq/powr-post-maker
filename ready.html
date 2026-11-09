@@ -62,6 +62,14 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
 .status{font-size:.9rem;color:var(--ok);min-height:1.3em;margin:0}
 .check{display:flex;gap:8px;align-items:center;font-weight:500;cursor:pointer}
 .check input{width:20px;height:20px;accent-color:var(--fg)}
+.todaybox{padding-block:24px 0;display:grid;gap:12px}
+.todaybox h2.head{margin:0;font-size:1.5rem;font-weight:600}
+.todaybox .post{border:2px solid var(--accent);box-shadow:0 6px 24px color-mix(in srgb,var(--fg) 12%,transparent)}
+.todaybox .post .check{font-size:1.15rem}
+.todaybox .post .check input{width:28px;height:28px}
+.todaybox .post.done .status-done{display:block}
+.status-done{display:none;margin:0;font-weight:600;color:var(--ok)}
+.weekhead{margin:0;padding-top:28px;font-size:1.15rem;font-weight:600}
 .empty{background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:28px;text-align:center;color:var(--muted)}
 :focus-visible{outline:3px solid color-mix(in srgb,var(--fg) 45%,transparent);outline-offset:2px}
 </style>
@@ -71,7 +79,7 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
   <div class="wrap">
     <div>
       <h1>Ready to Post</h1>
-      <p>This week's posts are shown first. Pick an earlier week from the list. Four new posts appear each week: every Tuesday, plus three of Monday, Wednesday, Friday and Saturday. Reels you ask for appear on Sundays. Save the images, copy the caption, then follow the steps in the Post Maker.</p>
+      <p>Today's post is at the top. Earlier posts are below. Four new posts appear each week: every Tuesday, plus three of Monday, Wednesday, Friday and Saturday. Reels you ask for appear on Sundays. Save the images, copy the caption, then follow the steps in the Post Maker.</p>
     </div>
     <a class="back" href="archive.html">All past posts</a>
     <a class="back" href="maker.html" style="margin-left:0">Open the Post Maker</a>
@@ -83,6 +91,8 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
     <span class="hint" id="bookStatus" aria-live="polite">Paste it into a Story link sticker, or your bio.</span>
   </div>
 </header>
+<section class="wrap todaybox" id="todayBox" aria-labelledby="todayHead"><h2 class="head" id="todayHead">Today's post</h2><p class="empty" id="todayNone" hidden></p></section>
+<div class="wrap"><h2 class="weekhead">This week and earlier</h2></div>
 <div class="wrap weekpick"><label for="week">Week</label><select id="week"></select></div>
 <div class="wrap days" id="days" role="group" aria-label="Show posts for"></div>
 <main class="wrap" id="list">
@@ -113,16 +123,16 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
   let week = thisWeek;
   const inWeek = (a) => a.dataset.week === week;
   function applyDay() {
-    document.querySelectorAll(".post").forEach(a => { a.hidden = !inWeek(a) || (pick !== "All" && a.dataset.day !== pick); });
+    document.querySelectorAll("#list .post").forEach(a => { a.hidden = !inWeek(a) || (pick !== "All" && a.dataset.day !== pick); });
     document.querySelectorAll("#days .chip").forEach(c => c.setAttribute("aria-pressed", c.dataset.day === pick));
     let none = document.getElementById("none");
     if (!none) { none = document.createElement("p"); none.id = "none"; none.className = "empty"; list.prepend(none); }
-    none.textContent = pick === "All" ? (week === thisWeek ? "No posts yet this week. The next one will appear here on its morning." : "No posts that week.") : `No ${pick} post in this week.`;
-    none.hidden = document.querySelectorAll(".post:not([hidden])").length > 0;
+    none.textContent = pick === "All" ? (week === thisWeek ? (document.querySelector("#todayBox .post") ? "Today's post is at the top. Other posts from this week will show here." : "No posts yet this week. The next one will appear here on its morning.") : "No posts that week.") : `No ${pick} post in this week.`;
+    none.hidden = document.querySelectorAll("#list .post:not([hidden])").length > 0;
   }
   function buildDays() {
     const box = document.getElementById("days"); box.innerHTML = "";
-    const all = [...document.querySelectorAll(".post")].filter(inWeek);
+    const all = [...document.querySelectorAll("#list .post")].filter(inWeek);
     const extra = [...new Set(all.map(a => a.dataset.day))].filter(d => d && !DAYS.includes(d));
     if (pick !== "All" && !DAYS.includes(pick) && !extra.includes(pick)) pick = "All";
     for (const d of ["All", ...DAYS, ...extra]) {
@@ -136,12 +146,18 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
   }
   function buildWeeks() {
     const sel = document.getElementById("week");
-    const weeks = [...new Set([thisWeek, ...[...document.querySelectorAll(".post")].map(a => a.dataset.week)])].filter(w => w <= thisWeek).sort().reverse();
+    const weeks = [...new Set([thisWeek, ...[...document.querySelectorAll("#list .post")].map(a => a.dataset.week)])].filter(w => w <= thisWeek).sort().reverse();
     sel.innerHTML = "";
     for (const w of weeks) { const o = document.createElement("option"); o.value = w; o.textContent = (w === thisWeek ? "This week: " : "") + weekLabel(w); sel.append(o); }
     sel.value = week;
     sel.onchange = () => { week = sel.value; buildDays(); };
   }
+  // Posted ticks are shared through a small Google Apps Script on the content calendar sheet (scripts/posted-log.gs).
+  // Leave LOG empty and the tick is saved on this phone only.
+  const LOG = "";
+  let shared = {};
+  if (LOG) { try { shared = await (await fetch(LOG, { cache: "no-store" })).json(); } catch {} }
+  const sendPosted = (id, on) => { if (!LOG) return; try { fetch(LOG, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ id, posted: on }) }); } catch {} };
   let posts = [];
   try { posts = await (await fetch("posts/index.json", { cache: "no-store" })).json(); } catch {}
   if (!posts.length) { list.innerHTML = '<p class="empty">No posts yet. Four posts arrive each week, every Tuesday plus three other mornings.</p>'; return; }
@@ -170,8 +186,9 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
         <div class="row"><button class="btn ghost copy" type="button">Copy caption</button><a class="btn ghost" href="maker.html?post=${item.id}">Use my own photo instead</a></div>
         <p class="status" aria-live="polite"></p>
         <label class="check"><input type="checkbox"> Posted</label>
+        <p class="status-done">Done for today. Thank you! 🎉</p>
       </div>`;
-    const day = dayOf(p.date || item.id); el.dataset.day = day; el.dataset.week = mondayOf(p.date || item.id);
+    const day = dayOf(p.date || item.id); el.dataset.day = day; el.dataset.week = mondayOf(p.date || item.id); el.dataset.date = (p.date || item.id).slice(0, 10);
     el.querySelector(".dayname").textContent = day;
     el.querySelector("h2").textContent = p.title || p.headline || "Post";
     el.querySelector(".pill").textContent = p.pillar || "";
@@ -202,10 +219,13 @@ main.wrap{padding-block:24px 64px;display:grid;gap:24px}
       } else fallback(k);
     });
     const cb = el.querySelector("input"); const key = "powr:posted:" + item.id;
-    cb.checked = !!store.get(key); el.classList.toggle("done", cb.checked);
-    cb.onchange = () => { store.set(key, cb.checked ? "1" : ""); el.classList.toggle("done", cb.checked); };
+    cb.checked = item.id in shared ? !!shared[item.id] : !!store.get(key); el.classList.toggle("done", cb.checked);
+    cb.onchange = () => { store.set(key, cb.checked ? "1" : ""); el.classList.toggle("done", cb.checked); sendPosted(item.id, cb.checked); };
     list.append(el);
   }
+  const mine = list.querySelector(`.post[data-date="${today}"]`);
+  if (mine) document.getElementById("todayBox").append(mine);
+  else { const n = document.getElementById("todayNone"); n.textContent = "No new post today. If you missed one, it's in the list below."; n.hidden = false; }
   buildWeeks();
   buildDays();
 })();

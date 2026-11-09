@@ -1,5 +1,6 @@
 // Builds the reminder email for posts/<id>/post.json and prints {subject, html, text} as JSON.
-// Usage: node scripts/email.mjs posts/2026-10-21
+// Usage: node scripts/email.mjs posts/2026-10-21 [--missed 2026-10-19,2026-10-20]
+// --missed lists earlier posts that aren't ticked as Posted; the email gently mentions them.
 import { readFileSync, existsSync } from "node:fs";
 import { join, resolve, basename } from "node:path";
 
@@ -14,6 +15,14 @@ const ready = `${SITE}/ready.html`;
 const reel = existsSync(join(dir, "reel.mp4"));
 const tap = reel ? "Post to Instagram as a Reel" : "Post to Instagram feed";
 const teal = "#15464D", blush = "#F4E9E6";
+const mi = process.argv.indexOf("--missed");
+const missed = (mi > 0 ? process.argv[mi + 1] || "" : "").split(",").filter(Boolean).map(m => {
+  const f = join(dir, "..", m, "post.json");
+  const q = existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : {};
+  const d = new Date(m + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long" });
+  return `${q.title || q.headline || m} (${d})`;
+});
+const missedLine = missed.length ? `Not ticked as posted yet: ${missed.join(", ")}. ${missed.length > 1 ? "They're" : "It's"} still on the Ready to post page if you'd like to share ${missed.length > 1 ? "them" : "it"}. If you've already posted, just tick Posted.` : "";
 
 const subject = reel ? `Your POWR Reel for ${day} is ready: ${p.title || p.headline}` : `Today's POWR post is ready: ${p.title || p.headline}`;
 const html = `<!doctype html><html><body style="margin:0;background:${blush};font-family:Helvetica,Arial,sans-serif;color:${teal}">
@@ -22,8 +31,9 @@ const html = `<!doctype html><html><body style="margin:0;background:${blush};fon
 <tr><td style="padding:24px 24px 8px">
   <p style="margin:0;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#4E6F73">${esc(day)} · ${esc(p.pillar || "")}</p>
   <h1 style="margin:6px 0 0;font-size:22px;line-height:1.3;color:${teal}">${reel ? `Your Reel for ${esc(day)} is ready` : "Today's post is ready"}</h1>
-  <p style="margin:8px 0 0;font-size:15px;line-height:1.5">It takes about two minutes. Open the <a href="${ready}" style="color:${teal};font-weight:bold">Ready to post page</a> on your phone, tap <b>${tap}</b>, then paste the caption.${reel ? " Post it on the day, and add music in Instagram if you like." : ""}</p>
+  <p style="margin:8px 0 0;font-size:15px;line-height:1.5">It takes about two minutes. Open the <a href="${ready}" style="color:${teal};font-weight:bold">Ready to post page</a> on your phone. Today's post is at the top. Tap <b>${tap}</b>, then paste the caption. When it's up, tick <b>Posted</b>.${reel ? " Post it on the day, and add music in Instagram if you like." : ""}</p>
   <p style="margin:10px 0 0;font-size:15px"><a href="${ready}" style="color:${teal};font-weight:bold">👉 Go to Ready to post</a></p>
+  ${missedLine ? `<p style="margin:10px 0 0;font-size:14px;line-height:1.5;background:${blush};border-radius:8px;padding:10px 12px">${esc(missedLine)}</p>` : ""}
   <p style="margin:8px 0 0;font-size:14px">Not sure what to do? <a href="${SITE}/" style="color:${teal}">See the step-by-step guide</a></p>
 </td></tr>
 <tr><td style="padding:16px 24px"><a href="${ready}"><img src="${SITE}/posts/${id}/feed.jpg" width="512" alt="${esc(p.headline)}" style="display:block;width:100%;max-width:512px;height:auto;border-radius:8px;border:0"></a></td></tr>
@@ -39,5 +49,5 @@ const html = `<!doctype html><html><body style="margin:0;background:${blush};fon
 </table>
 <p style="font-size:12px;color:#4E6F73;margin:14px 0 0">POWR Studio · automatic post reminder · <a href="${SITE}/archive.html" style="color:#4E6F73">past posts</a></p>
 </td></tr></table></body></html>`;
-const text = `${reel ? `Your POWR Reel for ${day} is ready.` : `Today's POWR post is ready (${day}).`}\n\nOpen ${ready} on your phone, tap "${tap}", then paste the caption.\n\nStep-by-step guide: ${SITE}/\n\nCaption:\n\n${caption}\n\nBooking link for Stories: https://app.classfit.com/Studio/247669`;
+const text = `${reel ? `Your POWR Reel for ${day} is ready.` : `Today's POWR post is ready (${day}).`}\n\nOpen ${ready} on your phone, tap "${tap}", then paste the caption.${missedLine ? "\n\n" + missedLine : ""}\n\nStep-by-step guide: ${SITE}/\n\nCaption:\n\n${caption}\n\nBooking link for Stories: https://app.classfit.com/Studio/247669`;
 console.log(JSON.stringify({ subject, html, text }));

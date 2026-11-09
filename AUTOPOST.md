@@ -119,11 +119,13 @@ Reminder emails: **ON** (approved by Jake on 2026-10-19)
 
 When this is ON, wait for the Pages workflow to finish so the images are live. Then build the email:
 
+Before building it, check which earlier posts aren't ticked yet. If the **Posted** tab exists in the content calendar sheet, read it with the Google Sheets connector (columns: Ticked at, Post, Posted; the latest row for a post wins). List the image posts from the 7 days before today that aren't marked Yes, then:
+
 ```bash
-node scripts/email.mjs posts/YYYY-MM-DD
+node scripts/email.mjs posts/YYYY-MM-DD --missed 2026-11-06,2026-11-04
 ```
 
-This prints `{subject, html, text}`. Send it with the Gmail connector from Jake's Gmail to `caroline@powrstudio.co.uk`: `htmlBody` = html, `body` = text, `subject` = subject. Send it once per post, and never to anyone else. If sending fails, say so in the thread reply; the post itself is still fine.
+Leave out `--missed` when everything is ticked or the tab doesn't exist yet. This prints `{subject, html, text}`. Send it with the Gmail connector from Jake's Gmail to `caroline@powrstudio.co.uk`: `htmlBody` = html, `body` = text, `subject` = subject. Send it once per post, and never to anyone else. If sending fails, say so in the thread reply; the post itself is still fine.
 
 ## Reels (on request, for Sundays)
 
